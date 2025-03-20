@@ -4,11 +4,13 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import WaitingRoom from './components/waitingroom'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 import { useState } from 'react'
+import ChatRoom from './components/ChatRoom'
 
 function App() {
   const apiServer = import.meta.env.VITE_CHAT_API
 
   const[connection, setConnection] = useState()
+  const[messages, setMessages] = useState([])
 
   const joinChatRoom = async (username, chatroom) => {
     try{
@@ -20,7 +22,12 @@ function App() {
 
       // set up handler
       connection.on('JoinSpecificChatRoom', (username, message) => {
+        setMessages(messages => [...messages, {username, message}])
         console.log("msg: ", message) 
+      })
+
+      connection.on('ReceiveMessage', (username, message) => {
+        setMessages(messages => [...messages, {username, message}])
       })
 
       // start the connection
@@ -29,6 +36,14 @@ function App() {
       
       setConnection(connection)
 
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const sendMessage = async (message) => {
+    try {
+      await connection.invoke('SendMessage', message)
     } catch (error) {
       console.log(error)
     }
@@ -44,7 +59,11 @@ function App() {
                 <h1 className='font-weight-light'>Welcome to the ChatApp </h1>
               </Col>
             </Row>
-            <WaitingRoom joinChatRoom={joinChatRoom} />
+            {!connection 
+              ? <WaitingRoom joinChatRoom={joinChatRoom} />
+              : <ChatRoom messages={messages} sendMessage={sendMessage}/>
+            }
+            
           </Container>
         </main>
       </div>

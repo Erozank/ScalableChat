@@ -1,5 +1,5 @@
+using ChatWithSignalR.Api.DataService;
 using ChatWithSignalR.Api.Hubs;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +13,6 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddSignalR();
 
-var reactAddress = builder.Configuration["services__react__http__0"];
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -25,6 +24,8 @@ builder.Services.AddCors(options =>
                .AllowCredentials();
     });
 });
+
+builder.Services.AddSingleton<SharedDb>();
 
 var app = builder.Build();
 
