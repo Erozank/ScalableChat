@@ -1,14 +1,12 @@
 using ChatWithSignalR.Api.DataService;
 using ChatWithSignalR.Api.Extensions;
 using ChatWithSignalR.Api.Hubs;
+using ChatWithSignalR.Api.Repositories;
 using ChatWithSignalR.Api.Users.Infrastucture;
 using ChatWithSignalR.UsersDb;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System.Diagnostics;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +57,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<SharedDb>();
 builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddSingleton<UsersDbContext>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 

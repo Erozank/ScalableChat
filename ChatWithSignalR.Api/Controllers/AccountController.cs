@@ -1,4 +1,5 @@
 ﻿using ChatWithSignalR.Api.Models;
+using ChatWithSignalR.Api.Repositories;
 using ChatWithSignalR.Api.Users.Infrastucture;
 using ChatWithSignalR.UsersDb;
 using Microsoft.AspNetCore.Mvc;
@@ -8,19 +9,21 @@ namespace ChatWithSignalR.Api.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ILogger<AccountController> _logger;
-        private readonly UsersDbContext _usersDbContext;
+        private readonly IUserRepository _userRepository;
         private readonly TokenProvider _tokenProvider;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AccountController(ILogger<AccountController> logger, UsersDbContext usersDbContext, TokenProvider tokenProvider)
+        public AccountController(ILogger<AccountController> logger, IUserRepository userRepository, TokenProvider tokenProvider, IPasswordHasher passwordHasher)
         {
             _logger = logger;
-            _usersDbContext = usersDbContext;
+            _userRepository = userRepository;
             _tokenProvider = tokenProvider;
+            _passwordHasher = passwordHasher;
         }
 
         // POST /account/login
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             // Validar el request
             if (!ModelState.IsValid)
@@ -29,12 +32,20 @@ namespace ChatWithSignalR.Api.Controllers
                 return BadRequest(ModelState);
             }
             // Validar el usuario
-            var user = _usersDbContext.Users.FirstOrDefault(u => u.Email == request.Email && u.Password == request.Password);
+            var user = await _userRepository.GetByEmail(request.Email);
             if (user == null)
             {
                 _logger.LogError("Invalid credentials for user: {0}", request.Email);
                 return Unauthorized();
             }
+
+            bool isCorrectPassword = _passwordHasher.Verify(request.Password, user.PasswordHash);
+            if (!isCorrectPassword)
+            {
+                _logger.LogError("Invalid credentials for user: {0}", request.Email);
+                return Unauthorized();
+            }
+
             // Crear el token
             var token = _tokenProvider.Create(user);
             return Ok(new { token });
@@ -42,7 +53,7 @@ namespace ChatWithSignalR.Api.Controllers
 
         // POST /account/register
         [HttpPost("register")]
-        public IActionResult Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             // Validar el request
             if (!ModelState.IsValid)
@@ -50,8 +61,9 @@ namespace ChatWithSignalR.Api.Controllers
                 _logger.LogError("Invalid request: {0}", request);
                 return BadRequest(ModelState);
             }
-            // Validar si el email ya está registrado
-            if (_usersDbContext.Users.Any(u => u.Email == request.Email))
+            // Validar si el email ya está registradoç
+            bool existsUser = await _userRepository.Exists(request.Email);
+            if (existsUser)
             {
                 _logger.LogError("Email already registered: {0}", request.Email);
                 return Conflict();
@@ -62,10 +74,9 @@ namespace ChatWithSignalR.Api.Controllers
                 Id = Guid.NewGuid(),
                 Nickname = request.Nickname,
                 Email = request.Email,
-                Password = request.Password
+                PasswordHash = _passwordHasher.Hash(request.Password)
             };
-            _usersDbContext.Users.Add(user);
-            _usersDbContext.SaveChanges();
+            await _userRepository.Insert(user);
             // Crear el token
             var token = _tokenProvider.Create(user);
             return Ok(new { token });

@@ -17,7 +17,7 @@ namespace ChatWithSignalR.UsersDb
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Nickname).IsRequired();
                 entity.Property(e => e.Email).IsRequired();
-                entity.Property(e => e.Password).IsRequired();
+                entity.Property(e => e.PasswordHash).IsRequired();
 
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.Nickname).IsUnique();
@@ -28,8 +28,8 @@ namespace ChatWithSignalR.UsersDb
     public class User
     {
         public Guid Id { get; set; }
-        public string Nickname { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public required string Nickname { get; set; }
+        public required string Email { get; set; }
+        public required string PasswordHash { get; set; }
     }
 }
