@@ -1,6 +1,24 @@
+using Arshid.Aspire.ApiDocs.Extensions;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var chatApi = builder.AddProject<Projects.ChatWithSignalR_Api>("chat-api");
+var postgres = builder.AddPostgres("postgres")
+    .WithPgAdmin()
+    .WithLifetime(ContainerLifetime.Persistent);
+
+if (builder.ExecutionContext.IsRunMode)
+{
+    // Data volumes don't work on ACA for Postgres so only add when running
+    postgres.WithDataVolume();
+}
+
+var postgresdb = postgres.AddDatabase("postgresdb");
+
+
+var chatApi = builder.AddProject<Projects.ChatWithSignalR_Api>("chat-api")
+    .WithSwagger()
+    .WithReference(postgresdb)
+    .WaitFor(postgresdb);
 
 var react = builder.AddNpmApp("react", "../ChatWithSignalR.Ui", "dev")
     .WithReference(chatApi)
@@ -9,7 +27,5 @@ var react = builder.AddNpmApp("react", "../ChatWithSignalR.Ui", "dev")
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
-
-chatApi.WithReference(react);
 
 builder.Build().Run();

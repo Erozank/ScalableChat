@@ -1,3 +1,4 @@
+using ChatWithSignalR.Api.Users.Infrastucture;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatWithSignalR.Api.Controllers;
@@ -12,10 +13,12 @@ public class WeatherForecastController : ControllerBase
     };
 
     private readonly ILogger<WeatherForecastController> _logger;
+    private readonly TokenProvider _tokenProvider;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    public WeatherForecastController(ILogger<WeatherForecastController> logger, TokenProvider tokenProvider)
     {
         _logger = logger;
+        _tokenProvider = tokenProvider;
     }
 
     [HttpGet(Name = "GetWeatherForecast")]

@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithSignalR.ServiceDefa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithSignalR.Api", "ChatWithSignalR.Api\ChatWithSignalR.Api.csproj", "{F08FE4D5-1E82-28E3-EB2E-1B44FE22B2D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWithSignalR.UsersDb", "ChatWithSignalR.UsersDb\ChatWithSignalR.UsersDb.csproj", "{5D3DA2CA-E8DC-B1B0-8094-1A2979F09C86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{F08FE4D5-1E82-28E3-EB2E-1B44FE22B2D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F08FE4D5-1E82-28E3-EB2E-1B44FE22B2D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F08FE4D5-1E82-28E3-EB2E-1B44FE22B2D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D3DA2CA-E8DC-B1B0-8094-1A2979F09C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D3DA2CA-E8DC-B1B0-8094-1A2979F09C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D3DA2CA-E8DC-B1B0-8094-1A2979F09C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D3DA2CA-E8DC-B1B0-8094-1A2979F09C86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

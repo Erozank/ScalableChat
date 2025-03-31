@@ -5,12 +5,17 @@ import WaitingRoom from './components/waitingroom'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
 import { useState } from 'react'
 import ChatRoom from './components/ChatRoom'
+import Register from './components/Register'
+import Login from './components/Login'
+import { Routes, Route } from 'react-router-dom'
 
 function App() {
   const apiServer = import.meta.env.VITE_CHAT_API
 
   const[connection, setConnection] = useState()
   const[messages, setMessages] = useState([])
+  const [isRegistered, setIsRegistered] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const joinChatRoom = async (username, chatroom) => {
     try{
@@ -59,11 +64,19 @@ function App() {
                 <h1 className='font-weight-light'>Welcome to the ChatApp </h1>
               </Col>
             </Row>
-            {!connection 
-              ? <WaitingRoom joinChatRoom={joinChatRoom} />
-              : <ChatRoom messages={messages} sendMessage={sendMessage}/>
-            }
-            
+            <Routes>
+              <Route path="/" element={
+                !isLoggedIn 
+                  ? <Login setIsLoggedIn={setIsLoggedIn} setIsRegistered={setIsRegistered} />
+                  : (!isRegistered 
+                    ? <Register />
+                    : (!connection 
+                      ? <WaitingRoom joinChatRoom={joinChatRoom} />
+                      : <ChatRoom messages={messages} sendMessage={sendMessage}/>
+                    ))
+              } />
+              <Route path="/register" element={<Register />} />
+            </Routes>
           </Container>
         </main>
       </div>
