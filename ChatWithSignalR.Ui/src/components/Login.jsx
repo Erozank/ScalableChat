@@ -3,7 +3,7 @@ import axios from "axios";
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Login({ setIsLoggedIn, setIsRegistered }) {
+function Login({ setIsLoggedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const apiServer = import.meta.env.VITE_CHAT_API;
@@ -16,6 +16,8 @@ function Login({ setIsLoggedIn, setIsRegistered }) {
         password,
       });
       if (response.status === 200) {
+        const { token } = response.data; // Assuming the JWT is returned as 'token'
+        localStorage.setItem("jwt", token); // Store the JWT in localStorage
         setIsLoggedIn(true);
       }
     } catch (error) {

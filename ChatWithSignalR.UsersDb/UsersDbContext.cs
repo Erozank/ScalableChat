@@ -18,6 +18,9 @@ namespace ChatWithSignalR.UsersDb
                 entity.Property(e => e.Nickname).IsRequired();
                 entity.Property(e => e.Email).IsRequired();
                 entity.Property(e => e.Password).IsRequired();
+
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.Nickname).IsUnique();
             });
         }
     }

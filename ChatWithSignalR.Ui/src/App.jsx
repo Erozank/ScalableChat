@@ -7,14 +7,14 @@ import { useState } from 'react'
 import ChatRoom from './components/ChatRoom'
 import Register from './components/Register'
 import Login from './components/Login'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 
 function App() {
   const apiServer = import.meta.env.VITE_CHAT_API
+  const navigate = useNavigate()
 
   const[connection, setConnection] = useState()
   const[messages, setMessages] = useState([])
-  const [isRegistered, setIsRegistered] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const joinChatRoom = async (username, chatroom) => {
@@ -54,6 +54,10 @@ function App() {
     }
   }
 
+  const handleRegistrationComplete = () => {
+    navigate('/')
+  }
+
   return (
     <>
       <div>
@@ -67,15 +71,13 @@ function App() {
             <Routes>
               <Route path="/" element={
                 !isLoggedIn 
-                  ? <Login setIsLoggedIn={setIsLoggedIn} setIsRegistered={setIsRegistered} />
-                  : (!isRegistered 
-                    ? <Register />
-                    : (!connection 
+                  ? <Login setIsLoggedIn={setIsLoggedIn} />
+                  : (!connection 
                       ? <WaitingRoom joinChatRoom={joinChatRoom} />
                       : <ChatRoom messages={messages} sendMessage={sendMessage}/>
-                    ))
+                    )
               } />
-              <Route path="/register" element={<Register />} />
+              <Route path="/register" element={<Register onRegistrationComplete={handleRegistrationComplete} />} />
             </Routes>
           </Container>
         </main>

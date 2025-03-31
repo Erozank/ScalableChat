@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 function Register() {
   const [nickname, setNickname] = useState('');
@@ -8,13 +9,16 @@ function Register() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const apiServer = import.meta.env.VITE_CHAT_API;
+  const navigate = useNavigate(); // Initialize navigate
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
 
     try {
-      const response = await fetch('/register', {
+      const response = await fetch(`${apiServer}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname, email, password }),
@@ -24,10 +28,14 @@ function Register() {
         throw new Error('Failed to register. Please try again.');
       }
 
+      const data = await response.json(); // Parse the JSON response
+      localStorage.setItem('jwt', data.token); // Store the JWT in localStorage
+
       setSuccess(true);
       setNickname('');
       setEmail('');
       setPassword('');
+      navigate('/waitingroom'); // Redirect to WaitingRoom
     } catch (err) {
       setError(err.message);
     }
