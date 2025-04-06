@@ -1,7 +1,6 @@
-﻿using ChatWithSignalR.Api.Models;
+﻿using ChatWithSignalR.Api.Infrastucture;
+using ChatWithSignalR.Api.Models;
 using ChatWithSignalR.Api.Repositories;
-using ChatWithSignalR.Api.Users.Infrastucture;
-using ChatWithSignalR.UsersDb;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatWithSignalR.Api.Controllers

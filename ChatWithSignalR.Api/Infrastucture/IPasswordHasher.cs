@@ -1,4 +1,4 @@
-﻿namespace ChatWithSignalR.Api.Users.Infrastucture
+﻿namespace ChatWithSignalR.Api.Infrastucture
 {
     public interface IPasswordHasher
     {

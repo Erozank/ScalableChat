@@ -1,11 +1,10 @@
+using Cassandra;
 using ChatWithSignalR.Api.DataService;
 using ChatWithSignalR.Api.Extensions;
 using ChatWithSignalR.Api.Hubs;
+using ChatWithSignalR.Api.Infrastucture;
 using ChatWithSignalR.Api.Repositories;
-using ChatWithSignalR.Api.Users.Infrastucture;
-using ChatWithSignalR.UsersDb;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -36,11 +35,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Register UsersDbContext
-builder.AddNpgsqlDbContext<UsersDbContext>("postgresdb", null,
-    optionsBuilder => optionsBuilder.UseNpgsql(npgsqlBuilder =>
-        npgsqlBuilder.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)
-        ));
+
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -56,9 +51,26 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<SharedDb>();
 builder.Services.AddSingleton<TokenProvider>();
-builder.Services.AddSingleton<UsersDbContext>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddSingleton<ICluster>(sp => {
+    return Cluster.Builder().AddContactPoint("localhost")
+                    .WithPort(9042)
+                    .Build();
+});
+builder.Services.AddSingleton<Cassandra.ISession>(sp => {
+    var cluster = sp.GetRequiredService<ICluster>();
+    try
+    {
+        return cluster.Connect(); 
+    }
+    catch (Exception ex)
+    {
+        var logger = sp.GetRequiredService<ILogger<Program>>(); 
+        logger.LogCritical(ex, "Failed to connect to ScyllaDB Keyspace chat_with_signalr");
+        throw;
+    }
+});
 
 var app = builder.Build();
 

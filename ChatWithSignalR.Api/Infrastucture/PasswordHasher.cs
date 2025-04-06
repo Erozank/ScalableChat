@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace ChatWithSignalR.Api.Users.Infrastucture
+namespace ChatWithSignalR.Api.Infrastucture
 {
     public class PasswordHasher : IPasswordHasher
     {

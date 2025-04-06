@@ -1,4 +1,5 @@
-﻿using ChatWithSignalR.UsersDb;
+﻿
+using ChatWithSignalR.Api.Models;
 
 namespace ChatWithSignalR.Api.Repositories
 {
