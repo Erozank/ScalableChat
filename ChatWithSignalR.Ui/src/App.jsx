@@ -3,19 +3,26 @@ import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import WaitingRoom from './components/waitingroom'
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import ChatRoom from './components/ChatRoom'
 import Register from './components/Register'
 import Login from './components/Login'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
+import LogoutButton from './components/LogoutButton'
 
 function App() {
   const apiServer = import.meta.env.VITE_CHAT_API
-  const navigate = useNavigate()
 
   const[connection, setConnection] = useState()
   const[messages, setMessages] = useState([])
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   const joinChatRoom = async (username, chatroom) => {
     try{
@@ -54,13 +61,14 @@ function App() {
     }
   }
 
-  const handleRegistrationComplete = () => {
-    navigate('/')
-  }
-
   return (
     <>
       <div>
+        {isLoggedIn && (
+          <div className="d-flex justify-content-end p-3">
+            <LogoutButton setIsLoggedIn={setIsLoggedIn} setConnection={setConnection} />
+          </div>
+        )}
         <main>
           <Container>
             <Row className='px-5 my-5'>
@@ -77,7 +85,7 @@ function App() {
                       : <ChatRoom messages={messages} sendMessage={sendMessage}/>
                     )
               } />
-              <Route path="/register" element={<Register onRegistrationComplete={handleRegistrationComplete} />} />
+              <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} />} />
             </Routes>
           </Container>
         </main>

@@ -16,7 +16,7 @@ function Login({ setIsLoggedIn }) {
         password,
       });
       if (response.status === 200) {
-        const { token } = response.data; // Assuming the JWT is returned as 'token'
+        const { token } = response.data; 
         localStorage.setItem("jwt", token); // Store the JWT in localStorage
         setIsLoggedIn(true);
       }

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
-function Register() {
+function Register({ setIsLoggedIn }) {
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -10,7 +10,7 @@ function Register() {
   const [success, setSuccess] = useState(false);
 
   const apiServer = import.meta.env.VITE_CHAT_API;
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,14 +28,15 @@ function Register() {
         throw new Error('Failed to register. Please try again.');
       }
 
-      const data = await response.json(); // Parse the JSON response
-      localStorage.setItem('jwt', data.token); // Store the JWT in localStorage
+      const data = await response.json();
+      localStorage.setItem('jwt', data.token);
 
       setSuccess(true);
       setNickname('');
       setEmail('');
       setPassword('');
-      navigate('/waitingroom'); // Redirect to WaitingRoom
+      setIsLoggedIn(true);
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }
@@ -46,7 +47,7 @@ function Register() {
       <h2 className="form-title">Register</h2>
       {error && <Alert variant="danger" className="form-alert">{error}</Alert>}
       {success && <Alert variant="success" className="form-alert">Registration successful!</Alert>}
-      <div className="form-wrapper"> {/* Added wrapper for border */}
+      <div className="form-wrapper">
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">
             <label htmlFor="formNickname" className="form-label">Nickname</label>
@@ -86,7 +87,7 @@ function Register() {
           </div>
           <button type="submit" className="form-button">Register</button>
         </form>
-      </div> {/* End of wrapper */}
+      </div>
     </div>
   );
 }
