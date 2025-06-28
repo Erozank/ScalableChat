@@ -5,6 +5,7 @@ using ChatWithSignalR.Api.Hubs;
 using ChatWithSignalR.Api.Infrastucture;
 using ChatWithSignalR.Api.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -32,6 +33,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ClockSkew = TimeSpan.Zero
+        };
+        o.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chat"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -93,6 +108,6 @@ app.MapControllers();
 
 app.UseCors("CorsPolicy");
 
-app.MapHub<ChatHub>("/chat").RequireAuthorization();
+app.MapHub<ChatHub>("/chat");
 
 app.Run();

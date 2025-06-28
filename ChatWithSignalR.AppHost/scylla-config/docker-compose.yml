@@ -4,7 +4,7 @@ services:
   scylla-node1:
     image: scylladb/scylla:latest
     container_name: scylla-node1
-    command: --smp 1 --memory 750M --overprovisioned 1 --seeds=scylla-node1
+    command: --seeds=scylla-node1
     ports:
       - "9042:9042"
     volumes:
@@ -15,7 +15,7 @@ services:
   scylla-node2:
     image: scylladb/scylla:latest
     container_name: scylla-node2
-    command: --smp 1 --memory 750M --overprovisioned 1 --seeds=scylla-node1
+    command: --seeds=scylla-node1
     volumes:
       - scylla_node2_data:/var/lib/scylla
     networks:
@@ -24,7 +24,7 @@ services:
   scylla-node3:
     image: scylladb/scylla:latest
     container_name: scylla-node3
-    command: --smp 1 --memory 750M --overprovisioned 1 --seeds=scylla-node1
+    command: --seeds=scylla-node1
     volumes:
       - scylla_node3_data:/var/lib/scylla
     networks:

@@ -34,5 +34,13 @@ namespace ChatWithSignalR.Api.Hubs
                 await Clients.Group(connection.ChatRoom).SendAsync("ReceiveMessage", connection.Username, message);
             }
         }
+
+        public async Task SendFriendRequest(string recipientUserId)
+        {
+            var senderUserId = Context.UserIdentifier;
+
+
+            await Clients.User(recipientUserId).SendAsync("ReceiveFriendRequest", senderUserId);
+        }
     }
 }

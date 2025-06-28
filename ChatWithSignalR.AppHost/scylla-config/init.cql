@@ -8,40 +8,32 @@ user_id uuid,
 nickname text,
 email text,
 password_hash text,
-PRIMARY KEY (user_id, email));
+PRIMARY KEY (user_id));
 
 CREATE INDEX IF NOT EXISTS ON users(email);
 
 CREATE INDEX IF NOT EXISTS ON users(nickname);
 
-CREATE TABLE IF NOT EXISTS user_contacts (
-    user_id UUID,
-    contact_user_id UUID,
-    added_at TIMESTAMP,
-    PRIMARY KEY (user_id, contact_user_id)
-) WITH CLUSTERING ORDER BY (contact_user_id ASC);
-
-CREATE TABLE IF NOT EXISTS chats (
-    chat_id UUID PRIMARY KEY,
-    is_group BOOLEAN,
-    title TEXT,
-    creator_id UUID,
-    created_at TIMESTAMP,
-    last_message_at TIMESTAMP
+CREATE TABLE IF NOT EXISTS friend_requests (
+    from_user_id UUID,
+    to_user_id UUID,
+    status int, -- 0 = pending, 1 = accepted, 2 = rejected
+    requested_at TIMESTAMP,
+    responded_at TIMESTAMP,
+    PRIMARY KEY (from_user_id, to_user_id)
 );
 
-CREATE TABLE IF NOT EXISTS chat_users (
-    user_id UUID,        
-    chat_id UUID,        
-    joined_at TIMESTAMP,
-    left_at TIMESTAMP,   
-    PRIMARY KEY (user_id, chat_id)
-) WITH CLUSTERING ORDER BY (chat_id ASC);
+CREATE TABLE IF NOT EXISTS direct_chats (
+    user_a UUID,
+    user_b UUID,
+    chat_id UUID,
+    PRIMARY KEY (user_a, user_b)
+);
 
-CREATE TABLE IF NOT EXISTS mensajes (
+CREATE TABLE IF NOT EXISTS messages (
     chat_id uuid,
-    message_id int,
-    createt_at timestamp,
+    message_id timeuuid,
+    created_at timestamp,
     sender_id uuid,
     content text,
     PRIMARY KEY (chat_id, message_id)

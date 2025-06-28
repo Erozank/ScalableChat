@@ -1,8 +1,9 @@
 import { Row, Col } from "react-bootstrap";
 import MessageContainer from "./MessageContainer";
 import SendMessageForm from "./SendMessageForm";
+import AddFriend from './AddFriend'
 
-const ChatRoom = ({messages, sendMessage}) =>
+const ChatRoom = ({messages, sendMessage, sendFriendRequest}) =>
     <div>
         <Row className='px-5 my-5'>
             <Col sm={10}>
@@ -20,6 +21,10 @@ const ChatRoom = ({messages, sendMessage}) =>
                 <SendMessageForm sendMessage={sendMessage} />
             </Col>
         </Row>
+        <div className="mt-4">
+            <h5>Añadir amigo</h5>
+            <AddFriend onAddFriend={sendFriendRequest} />
+        </div>
     </div>
 
 export default ChatRoom

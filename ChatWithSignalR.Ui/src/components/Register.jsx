@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-function Register({ setIsLoggedIn }) {
+function Register({ setIsLoggedIn, setJwt }) {
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +35,9 @@ function Register({ setIsLoggedIn }) {
       setNickname('');
       setEmail('');
       setPassword('');
+      setJwt(data.token)
       setIsLoggedIn(true);
+
       navigate('/');
     } catch (err) {
       setError(err.message);

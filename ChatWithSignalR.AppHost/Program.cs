@@ -14,4 +14,6 @@ var react = builder.AddNpmApp("react", "../ChatWithSignalR.Ui", "dev")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
 
+chatApi.WithReference(react);
+
 builder.Build().Run();
