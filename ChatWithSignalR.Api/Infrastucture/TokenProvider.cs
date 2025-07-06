@@ -1,4 +1,4 @@
-﻿using ChatWithSignalR.Api.Models;
+﻿using ChatWithSignalR.Api.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -8,7 +8,7 @@ namespace ChatWithSignalR.Api.Infrastucture
 {
     public sealed class TokenProvider(IConfiguration configuration)
     {
-        public string Create(User user)
+        public string Create(UserEntity user)
         {
             string secretKey = configuration["Jwt:SecretKey"]!;
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));

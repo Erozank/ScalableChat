@@ -2,13 +2,14 @@ import { Col, Container, Row } from 'react-bootstrap'
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import WaitingRoom from './components/waitingroom'
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr'
+import { HubConnectionBuilder } from '@microsoft/signalr'
 import { useState, useEffect } from 'react'
 import ChatRoom from './components/ChatRoom'
 import Register from './components/Register'
 import Login from './components/Login'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import LogoutButton from './components/LogoutButton'
+import FriendsList from './components/FriendsList';
 
 function App() {
   const apiServer = import.meta.env.VITE_CHAT_API
@@ -28,7 +29,6 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn && !connection) {
-      console.log("sending jwt: ", jwt)
       const newConnection = new HubConnectionBuilder()
         .withUrl(`${apiServer}/chat`, {
           accessTokenFactory: () => jwt // Use the JWT token for authentication
@@ -43,6 +43,10 @@ function App() {
 
       newConnection.on('ReceiveMessage', (username, message) => {
         setMessages(messages => [...messages, { username, message }]);
+      });
+
+      newConnection.on('ReceiveFriendRequest', (friendName) => {
+        console.log("Received friend request from: ", friendName);
       });
 
       newConnection.start()
@@ -109,6 +113,11 @@ function App() {
                     )
               } />
               <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn} setJwt={setJwt} />} />
+              <Route path="/friends" element={
+                !isLoggedIn 
+                  ? <Navigate to="/" />
+                  : <FriendsList apiServer={apiServer} jwt={jwt} />
+              } />
             </Routes>
           </Container>
         </main>

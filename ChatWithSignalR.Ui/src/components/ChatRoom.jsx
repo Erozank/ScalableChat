@@ -22,7 +22,7 @@ const ChatRoom = ({messages, sendMessage, sendFriendRequest}) =>
             </Col>
         </Row>
         <div className="mt-4">
-            <h5>Añadir amigo</h5>
+            <h5>Add friend</h5>
             <AddFriend onAddFriend={sendFriendRequest} />
         </div>
     </div>

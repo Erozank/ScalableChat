@@ -1,24 +1,17 @@
-﻿using ChatWithSignalR.Api.Infrastucture;
+﻿using ChatWithSignalR.Api.Entities;
+using ChatWithSignalR.Api.Infrastucture;
 using ChatWithSignalR.Api.Models;
 using ChatWithSignalR.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatWithSignalR.Api.Controllers
 {
-    public class AccountController : ControllerBase
+    public class AccountController(ILogger<AccountController> logger, IUserRepository userRepository, TokenProvider tokenProvider, IPasswordHasher passwordHasher) : ControllerBase
     {
-        private readonly ILogger<AccountController> _logger;
-        private readonly IUserRepository _userRepository;
-        private readonly TokenProvider _tokenProvider;
-        private readonly IPasswordHasher _passwordHasher;
-
-        public AccountController(ILogger<AccountController> logger, IUserRepository userRepository, TokenProvider tokenProvider, IPasswordHasher passwordHasher)
-        {
-            _logger = logger;
-            _userRepository = userRepository;
-            _tokenProvider = tokenProvider;
-            _passwordHasher = passwordHasher;
-        }
+        private readonly ILogger<AccountController> _logger = logger;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly TokenProvider _tokenProvider = tokenProvider;
+        private readonly IPasswordHasher _passwordHasher = passwordHasher;
 
         // POST /account/login
         [HttpPost("login")]
@@ -68,7 +61,7 @@ namespace ChatWithSignalR.Api.Controllers
                 return Conflict();
             }
             // Crear el usuario
-            var user = new User
+            var user = new UserEntity
             {
                 Id = Guid.NewGuid(),
                 Nickname = request.Nickname,

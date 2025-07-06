@@ -5,7 +5,6 @@ using ChatWithSignalR.Api.Hubs;
 using ChatWithSignalR.Api.Infrastucture;
 using ChatWithSignalR.Api.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -68,6 +67,7 @@ builder.Services.AddSingleton<SharedDb>();
 builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
 builder.Services.AddSingleton<ICluster>(sp => {
     return Cluster.Builder().AddContactPoint("localhost")
                     .WithPort(9042)

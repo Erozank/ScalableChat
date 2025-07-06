@@ -1,4 +1,5 @@
 ﻿using Cassandra;
+using ChatWithSignalR.Api.Entities;
 using ChatWithSignalR.Api.Models;
 
 namespace ChatWithSignalR.Api.Repositories
@@ -8,6 +9,7 @@ namespace ChatWithSignalR.Api.Repositories
         private readonly Cassandra.ISession _session;
         private PreparedStatement? _insertPrep;
         private PreparedStatement? _getByEmailPrep;
+        private PreparedStatement? _getUserIdByNickname;
 
         public UserRepository(Cassandra.ISession session)
         {
@@ -20,7 +22,7 @@ namespace ChatWithSignalR.Api.Repositories
             return user != null;
         }
 
-        public async Task Insert(User user)
+        public async Task Insert(UserEntity user)
         {
             if (_insertPrep == null)
             {
@@ -41,7 +43,7 @@ namespace ChatWithSignalR.Api.Repositories
             await _session.ExecuteAsync(boundStatement);
         }
 
-        public async Task<User?> GetByEmail(string email)
+        public async Task<UserEntity?> GetByEmail(string email)
         {
             if (_getByEmailPrep == null)
             {
@@ -56,9 +58,43 @@ namespace ChatWithSignalR.Api.Repositories
             return row == null ? null : MapRowToUser(row);
         }
 
-        private User MapRowToUser(Row row)
+        public async Task<Guid?> GetUserIdByNickname(string nickname)
         {
-            return new User
+            if (_getUserIdByNickname == null)
+            {
+                var statement = await _session.PrepareAsync("SELECT user_id FROM chat_with_signalr.users WHERE nickname = ?");
+                Interlocked.CompareExchange(ref _getUserIdByNickname, statement, null);
+            }
+
+            var boundStatement = _getUserIdByNickname!.Bind(nickname);
+            var rowSet = await _session.ExecuteAsync(boundStatement);
+            var row = rowSet.FirstOrDefault();
+
+            return row == null ? null : row.GetValue<Guid>("user_id");
+        }
+
+        public async Task<UserPreview?> GetUserPreviewByUserId(Guid userId)
+        {
+            if (_getUserIdByNickname == null)
+            {
+                var statement = await _session.PrepareAsync("SELECT nickname FROM chat_with_signalr.users WHERE user_id = ?");
+                Interlocked.CompareExchange(ref _getUserIdByNickname, statement, null);
+            }
+            var boundStatement = _getUserIdByNickname!.Bind(userId);
+            var rowSet = await _session.ExecuteAsync(boundStatement);
+            var row = rowSet.FirstOrDefault();
+
+            return row == null ? null : new UserPreview
+            {
+                UserId = userId,
+                Nickname = row.GetValue<string>("nickname")
+            };
+        }
+
+
+        private UserEntity MapRowToUser(Row row)
+        {
+            return new UserEntity
             {
                 Id = row.GetValue<Guid>("user_id"),
                 Nickname = row.GetValue<string>("nickname"), 

@@ -1,4 +1,5 @@
 ﻿
+using ChatWithSignalR.Api.Entities;
 using ChatWithSignalR.Api.Models;
 
 namespace ChatWithSignalR.Api.Repositories
@@ -6,7 +7,9 @@ namespace ChatWithSignalR.Api.Repositories
     public interface IUserRepository
     {
         Task<bool> Exists(string email);
-        Task<User?> GetByEmail(string email);
-        Task Insert(User user);
+        Task<UserEntity?> GetByEmail(string email);
+        Task<UserPreview?> GetUserPreviewByUserId(Guid userId);
+        Task<Guid?> GetUserIdByNickname(string nickname);
+        Task Insert(UserEntity user);
     }
 }

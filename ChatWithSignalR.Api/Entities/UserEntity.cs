@@ -1,6 +1,6 @@
-﻿namespace ChatWithSignalR.Api.Models
+﻿namespace ChatWithSignalR.Api.Entities
 {
-    public class User
+    public class UserEntity
     {
         public Guid Id { get; set; }
         public required string Nickname { get; set; }

@@ -23,6 +23,13 @@ CREATE TABLE IF NOT EXISTS friend_requests (
     PRIMARY KEY (from_user_id, to_user_id)
 );
 
+CREATE TABLE IF NOT EXISTS user_friends (
+    user_id UUID,
+    friend_id UUID,
+    since TIMESTAMP,
+    PRIMARY KEY (user_id, friend_id)
+);
+
 CREATE TABLE IF NOT EXISTS direct_chats (
     user_a UUID,
     user_b UUID,
@@ -30,11 +37,18 @@ CREATE TABLE IF NOT EXISTS direct_chats (
     PRIMARY KEY (user_a, user_b)
 );
 
+CREATE TABLE IF NOT EXISTS user_chats (
+    user_id UUID,
+    chat_id UUID,
+    last_message_at TIMESTAMP,
+    PRIMARY KEY (user_id, last_message_at)
+) WITH CLUSTERING ORDER BY (last_message_at DESC);
+
 CREATE TABLE IF NOT EXISTS messages (
-    chat_id uuid,
-    message_id timeuuid,
-    created_at timestamp,
-    sender_id uuid,
-    content text,
+    chat_id UUID,
+    message_id TIMEUUID,
+    created_at TIMESTAMP,
+    sender_id UUID,
+    content TEXT,
     PRIMARY KEY (chat_id, message_id)
 ) WITH CLUSTERING ORDER BY (message_id ASC);
