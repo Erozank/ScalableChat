@@ -1,7 +1,7 @@
-CREATE KEYSPACE IF NOT EXISTS chat_with_signalr
+CREATE KEYSPACE IF NOT EXISTS scalable_chat
 WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
 
-USE chat_with_signalr;
+USE scalable_chat;
 
 CREATE TABLE IF NOT EXISTS users (
 user_id uuid,

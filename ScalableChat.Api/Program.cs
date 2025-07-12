@@ -82,7 +82,7 @@ builder.Services.AddSingleton<Cassandra.ISession>(sp => {
     catch (Exception ex)
     {
         var logger = sp.GetRequiredService<ILogger<Program>>(); 
-        logger.LogCritical(ex, "Failed to connect to ScyllaDB Keyspace chat_with_signalr");
+        logger.LogCritical(ex, "Failed to connect to ScyllaDB Keyspace scalable_chat");
         throw;
     }
 });

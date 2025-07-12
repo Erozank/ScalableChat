@@ -19,7 +19,7 @@ namespace ScalableChat.Api.Repositories
             if (_insertPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
-                    INSERT INTO chat_with_signalr.friend_requests (from_user_id, to_user_id, status, requested_at) 
+                    INSERT INTO scalable_chat.friend_requests (from_user_id, to_user_id, status, requested_at) 
                     VALUES (?, ?, ?, ?)
                     """);
                 Interlocked.CompareExchange(ref _insertPrep, statement, null);
@@ -33,7 +33,7 @@ namespace ScalableChat.Api.Repositories
             if (_getReceivedFriendRequestsPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
-                    SELECT from_user_id FROM chat_with_signalr.friend_requests 
+                    SELECT from_user_id FROM scalable_chat.friend_requests 
                     WHERE to_user_id = ? AND status = ?
                     """);
                 Interlocked.CompareExchange(ref _getReceivedFriendRequestsPrep, statement, null);
@@ -48,7 +48,7 @@ namespace ScalableChat.Api.Repositories
             if (_getFriendshipStatusPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
-                    SELECT status FROM chat_with_signalr.friend_requests 
+                    SELECT status FROM scalable_chat.friend_requests 
                     WHERE from_user_id = ? AND to_user_id = ?
                     """);
                 Interlocked.CompareExchange(ref _getFriendshipStatusPrep, statement, null);
@@ -72,7 +72,7 @@ namespace ScalableChat.Api.Repositories
             if (_updateFriendshipStatusPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
-                    UPDATE chat_with_signalr.friend_requests 
+                    UPDATE scalable_chat.friend_requests 
                     SET status = ? 
                     WHERE from_user_id = ? AND to_user_id = ?
                     """);
@@ -112,7 +112,7 @@ namespace ScalableChat.Api.Repositories
             if (_getFriendsPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
-                    SELECT friend_id FROM chat_with_signalr.user_friends 
+                    SELECT friend_id FROM scalable_chat.user_friends 
                     WHERE user_id = ?
                     """);
                 Interlocked.CompareExchange(ref _getFriendsPrep, statement, null);

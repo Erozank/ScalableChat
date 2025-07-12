@@ -26,7 +26,7 @@ namespace ScalableChat.Api.Repositories
         {
             if (_insertPrep == null)
             {
-                var statement = await _session.PrepareAsync("INSERT INTO chat_with_signalr.users (user_id, nickname, email, password_hash) VALUES (?, ?, ?, ?)");
+                var statement = await _session.PrepareAsync("INSERT INTO scalable_chat.users (user_id, nickname, email, password_hash) VALUES (?, ?, ?, ?)");
                 Interlocked.CompareExchange(ref _insertPrep, statement, null);
             }
 
@@ -47,7 +47,7 @@ namespace ScalableChat.Api.Repositories
         {
             if (_getByEmailPrep == null)
             {
-                var statement = await _session.PrepareAsync("SELECT user_id, nickname, email, password_hash FROM chat_with_signalr.users WHERE email = ?");
+                var statement = await _session.PrepareAsync("SELECT user_id, nickname, email, password_hash FROM scalable_chat.users WHERE email = ?");
                 Interlocked.CompareExchange(ref _getByEmailPrep, statement, null);
             }
 
@@ -62,7 +62,7 @@ namespace ScalableChat.Api.Repositories
         {
             if (_getUserIdByNickname == null)
             {
-                var statement = await _session.PrepareAsync("SELECT user_id FROM chat_with_signalr.users WHERE nickname = ?");
+                var statement = await _session.PrepareAsync("SELECT user_id FROM scalable_chat.users WHERE nickname = ?");
                 Interlocked.CompareExchange(ref _getUserIdByNickname, statement, null);
             }
 
@@ -77,7 +77,7 @@ namespace ScalableChat.Api.Repositories
         {
             if (_getUserIdByNickname == null)
             {
-                var statement = await _session.PrepareAsync("SELECT nickname FROM chat_with_signalr.users WHERE user_id = ?");
+                var statement = await _session.PrepareAsync("SELECT nickname FROM scalable_chat.users WHERE user_id = ?");
                 Interlocked.CompareExchange(ref _getUserIdByNickname, statement, null);
             }
             var boundStatement = _getUserIdByNickname!.Bind(userId);
