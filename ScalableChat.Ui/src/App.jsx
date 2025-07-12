@@ -8,9 +8,11 @@ import { useState, useEffect } from "react";
 import ChatRoom from "./components/ChatRoom";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, Link, NavLink } from "react-router-dom";
 import LogoutButton from "./components/LogoutButton";
 import FriendsList from "./components/FriendsList";
+import DarkModeToggle from "./components/DarkModeToggle";
+import HeaderNav from "./components/HeaderNav";
 
 function App() {
   const location = useLocation();
@@ -20,6 +22,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -90,32 +93,26 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    document.body.className = darkMode ? "dark-mode" : "";
+  }, [darkMode]);
+
   return (
     <>
       <header>
-        {isLoggedIn && (
-          <nav>
-            <div className="d-flex justify-content-center align-items-center my-3 position-relative">
-              <div>
-                <Link to="/" className="btn btn-primary mx-2">
-                  <i className="bi bi-chat-dots me-2"></i>
-                  Chats
-                </Link>
-                <Link to="/friends" className="btn btn-primary mx-2">
-                  <i className="bi bi-people me-2"></i>
-                  Friends
-                </Link>
-              </div>
-              <div className="position-absolute end-0 me-4">
-                <LogoutButton
-                  setIsLoggedIn={setIsLoggedIn}
-                  setConnection={setConnection}
-                  setJwt={setJwt}
-                />
-              </div>
+        <div className="d-flex justify-content-between align-items-center px-4 py-2">
+          {isLoggedIn && <HeaderNav />}
+          <DarkModeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+          {isLoggedIn && (
+            <div className="ms-3">
+              <LogoutButton
+                setIsLoggedIn={setIsLoggedIn}
+                setConnection={setConnection}
+                setJwt={setJwt}
+              />
             </div>
-          </nav>
-        )}
+          )}
+        </div>
       </header>
       <div>
         <main>

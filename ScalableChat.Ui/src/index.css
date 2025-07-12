@@ -52,6 +52,10 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+.form-error {
+  color: red;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -63,4 +67,53 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.dark-mode {
+  background-color: #242424;
+  color: #fff;
+}
+
+.dark-mode .form-container {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark-mode input,
+.dark-mode button {
+  background-color: #444;
+  color: #fff;
+}
+
+.active-darkmode-icon {
+  color: #ffc107; /* Amarillo para el sol */
+  filter: drop-shadow(0 0 2px #ffc107);
+}
+
+.toggle-darkmode-btn .bi {
+  color: #888;
+  opacity: 0.7;
+}
+
+.toggle-darkmode-btn .active-darkmode-icon {
+  opacity: 1;
+  color: #ffc107;
+}
+
+.toggle-darkmode-btn .bi-moon-fill.active-darkmode-icon {
+  color: #0dcaf0; /* Azul para la luna */
+  filter: drop-shadow(0 0 2px #0dcaf0);
+}
+
+.active-nav {
+  background-color: #2196f3 !important; /* Azul */
+  color: #fff !important;
+  border-radius: 6px;
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(33,150,243,0.15);
+  font-weight: bold;
+  transition: all 0.2s;
+}
+.active-nav i {
+  color: #fff !important;
 }

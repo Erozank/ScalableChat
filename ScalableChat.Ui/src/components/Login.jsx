@@ -6,10 +6,12 @@ import { Link } from "react-router-dom";
 function Login({ setIsLoggedIn, setJwt }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState(""); // Nuevo estado para el mensaje de error
   const apiServer = import.meta.env.VITE_CHAT_API;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg(""); // Limpiar mensaje de error antes de intentar login
     try {
       const response = await axios.post(`${apiServer}/login`, {
         email,
@@ -22,6 +24,7 @@ function Login({ setIsLoggedIn, setJwt }) {
         setIsLoggedIn(true);
       }
     } catch (error) {
+      setErrorMsg("Incorrect email or password"); // Mostrar mensaje de error
       console.error("Login failed:", error);
     }
   };
@@ -50,6 +53,11 @@ function Login({ setIsLoggedIn, setJwt }) {
             className="form-input"
           />
         </div>
+        {errorMsg && (
+          <div className="form-error">
+            {errorMsg}
+          </div>
+        )}
         <button type="submit" className="form-button">
           Login
         </button>
