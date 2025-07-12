@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.AppHost", "ScalableChat.AppHost\ScalableChat.AppHost.csproj", "{FC805DD1-E446-47CE-9E5D-D366BCB36887}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.ServiceDefaults", "ScalableChat.ServiceDefaults\ScalableChat.ServiceDefaults.csproj", "{59E0C623-EA98-642F-9118-4F8ACC007461}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.Api", "ScalableChat.Api\ScalableChat.Api.csproj", "{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC805DD1-E446-47CE-9E5D-D366BCB36887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC805DD1-E446-47CE-9E5D-D366BCB36887}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC805DD1-E446-47CE-9E5D-D366BCB36887}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC805DD1-E446-47CE-9E5D-D366BCB36887}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59E0C623-EA98-642F-9118-4F8ACC007461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59E0C623-EA98-642F-9118-4F8ACC007461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59E0C623-EA98-642F-9118-4F8ACC007461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59E0C623-EA98-642F-9118-4F8ACC007461}.Release|Any CPU.Build.0 = Release|Any CPU
+		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {211D4688-D7C6-44DD-9062-26D526A7A633}
+	EndGlobalSection
+EndGlobal
