@@ -15,8 +15,7 @@ namespace ChatWithSignalR.Api.Controllers
         [HttpGet("friends")]
         public async Task<IActionResult> GetFriends()
         {
-            var userIdentity = User.Identity as ClaimsIdentity;
-            var stringUserId = userIdentity?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var stringUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (stringUserId == null || !Guid.TryParse(stringUserId, out Guid userId))
             {

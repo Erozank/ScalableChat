@@ -24,7 +24,7 @@ namespace ChatWithSignalR.Api.Repositories
                     """);
                 Interlocked.CompareExchange(ref _insertPrep, statement, null);
             }
-            var boundStatement = _insertPrep!.Bind(userId, friendId, FriendshipStatus.Pending, DateTime.UtcNow);
+            var boundStatement = _insertPrep!.Bind(userId, friendId, (int)FriendshipStatus.Pending, DateTime.UtcNow);
             await _session.ExecuteAsync(boundStatement);
         }
 
@@ -45,8 +45,6 @@ namespace ChatWithSignalR.Api.Repositories
 
         public async Task<FriendshipStatus?> GetFriendshipStatus(Guid fromUserId, Guid toUserId)
         {
-            var friendshipStatuses = new List<FriendshipStatus>();
-
             if (_getFriendshipStatusPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
@@ -55,13 +53,18 @@ namespace ChatWithSignalR.Api.Repositories
                     """);
                 Interlocked.CompareExchange(ref _getFriendshipStatusPrep, statement, null);
             }
+
             var boundStatement = _getFriendshipStatusPrep!.Bind(fromUserId, toUserId);
             var resultSet = await _session.ExecuteAsync(boundStatement);
-            if (resultSet.Any())
+            var row = resultSet.FirstOrDefault();
+
+            if (row != null)
             {
-                friendshipStatuses.AddRange(resultSet.Select(x => x.GetValue<FriendshipStatus>("status")));
+                var statusInt = row.GetValue<int>("status");
+                return (FriendshipStatus)statusInt;
             }
-            return resultSet?.FirstOrDefault().GetValue<FriendshipStatus>("status");
+
+            return null;
         }
 
         public async Task UpdateFriendshipStatus(Guid fromUserId, Guid toUserId, FriendshipStatus status)
