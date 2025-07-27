@@ -88,18 +88,18 @@ namespace ScalableChat.Api.Repositories
 
             var batch = new BatchStatement()
                 .Add(new SimpleStatement(@"
-                    UPDATE friend_requests
+                    UPDATE scalable_chat.friend_requests
                     SET status = ?, responded_at = ?
                     WHERE from_user_id = ? AND to_user_id = ?",
                     1, now, fromUserId, toUserId
                 ))
                 .Add(new SimpleStatement(@"
-                    INSERT INTO user_friends (user_id, friend_id, since)
+                    INSERT INTO scalable_chat.user_friends (user_id, friend_id, since)
                     VALUES (?, ?, ?)",
                     fromUserId, toUserId, now
                 ))
                 .Add(new SimpleStatement(@"
-                    INSERT INTO user_friends (user_id, friend_id, since)
+                    INSERT INTO scalable_chat.user_friends (user_id, friend_id, since)
                     VALUES (?, ?, ?)",
                     toUserId, fromUserId, now
                 ));

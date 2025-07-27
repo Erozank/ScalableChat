@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import AddFriend from "./AddFriend";
 
-const WaitingRoom = ({ joinChatRoom, sendFriendRequest }) => {
+const WaitingRoom = ({ joinChatRoom }) => {
   const [username, setUsername] = useState();
   const [chatroom, setChatroom] = useState();
 
@@ -34,10 +33,6 @@ const WaitingRoom = ({ joinChatRoom, sendFriendRequest }) => {
           </Col>
         </Row>
       </Form>
-      <div className="mt-4">
-        <h5>Add friend</h5>
-        <AddFriend onAddFriend={sendFriendRequest} />
-      </div>
     </>
   );
 };

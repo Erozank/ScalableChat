@@ -94,8 +94,7 @@ button:focus-visible {
   color: #fff;
 }
 
-.dark-mode input,
-.dark-mode button {
+.dark-mode input {
   background-color: #444;
   color: #fff;
 }

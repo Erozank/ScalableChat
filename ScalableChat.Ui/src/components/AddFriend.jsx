@@ -16,7 +16,7 @@ const AddFriend = ({ onAddFriend }) => {
       <input
         type="text"
         className="form-control me-2"
-        placeholder="User name"
+        placeholder="Nickname"
         value={friendName}
         onChange={(e) => setFriendName(e.target.value)}
       />

@@ -1,12 +1,11 @@
 ﻿using ScalableChat.Api.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace ScalableChat.Api.Controllers
 {
-    public class FriendsRepository(IFriendRequestRepository friendRequestRepository) : ControllerBase
+    public class FriendsController(IFriendRequestRepository friendRequestRepository) : ControllerBase
     {
         private readonly IFriendRequestRepository _friendRequestRepository = friendRequestRepository;
 

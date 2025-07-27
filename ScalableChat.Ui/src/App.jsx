@@ -8,11 +8,11 @@ import { useState, useEffect } from "react";
 import ChatRoom from "./components/ChatRoom";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { Routes, Route, Navigate, useLocation, Link, NavLink } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import LogoutButton from "./components/LogoutButton";
-import FriendsList from "./components/FriendsList";
 import DarkModeToggle from "./components/DarkModeToggle";
 import HeaderNav from "./components/HeaderNav";
+import Friends from "./components/Friends";
 
 function App() {
   const location = useLocation();
@@ -23,6 +23,7 @@ function App() {
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
   const [darkMode, setDarkMode] = useState(false);
+  const [friendRequests, setFriendRequests] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -49,8 +50,16 @@ function App() {
         setMessages((messages) => [...messages, { username, message }]);
       });
 
-      newConnection.on("ReceiveFriendRequest", (friendName) => {
-        console.log("Received friend request from: ", friendName);
+      newConnection.on("ReceiveFriendRequest", (friendData) => {
+        setFriendRequests((prev) => {
+          const exists = prev.some((req) => req.userId === friendData.userId);
+          if (exists) return prev;
+          return [
+            ...prev,
+            { nickname: friendData.nickname, userId: friendData.userId }
+          ];
+        });
+        console.log("Received friend request from: ", friendData.nickname);
       });
 
       newConnection
@@ -88,6 +97,16 @@ function App() {
     try {
       console.log("Sending friend request to: ", friendName);
       await connection.invoke("SendFriendRequest", friendName);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const acceptFriendRequest = async (friendId) => {
+    if (!connection) return;
+    try {
+      console.log("Accepting friend request from: ", friendId);
+      await connection.invoke("AcceptFriendRequest", friendId);
     } catch (error) {
       console.log(error);
     }
@@ -154,7 +173,14 @@ function App() {
                   !isLoggedIn ? (
                     <Navigate to="/" />
                   ) : (
-                    <FriendsList apiServer={apiServer} jwt={jwt} />
+                    <Friends 
+                      apiServer={apiServer} 
+                      jwt={jwt} 
+                      sendFriendRequest={sendFriendRequest} 
+                      acceptFriendRequest={acceptFriendRequest} 
+                      friendRequests={friendRequests}
+                      setFriendRequests={setFriendRequests}
+                    />
                   )
                 }
               />

@@ -80,7 +80,7 @@ namespace ScalableChat.Api.Hubs
             if (friendshipStatus == FriendshipStatus.Pending)
             {
                 await friendsRepository.AcceptFriendRequestAsync(userId, recipientUserId);
-                await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", recipientUserId);
+                await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", userId);
             }
         }
 
@@ -91,7 +91,6 @@ namespace ScalableChat.Api.Hubs
             if (friendshipStatus == FriendshipStatus.Pending)
             {
                 await friendsRepository.UpdateFriendshipStatus(userId, recipientUserId, FriendshipStatus.Rejected);
-                await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", recipientUserId);
             }
         }
     }
