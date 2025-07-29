@@ -1,39 +1,14 @@
-﻿using ScalableChat.Api.DataService;
+﻿using Microsoft.AspNetCore.SignalR;
 using ScalableChat.Api.Enums;
 using ScalableChat.Api.Models;
 using ScalableChat.Api.Repositories;
-using Microsoft.AspNetCore.SignalR;
-using System.Diagnostics;
 
 namespace ScalableChat.Api.Hubs
 {
-    public class ChatHub(SharedDb sharedDb, IUserRepository userRepository, IFriendRequestRepository friendsRepository) : Hub
+    public class ChatHub(IUserRepository userRepository, IFriendRequestRepository friendsRepository) : Hub
     {
-        private readonly SharedDb sharedDb = sharedDb;
         private readonly IUserRepository userRepository = userRepository;
         private readonly IFriendRequestRepository friendsRepository = friendsRepository;
-
-        public async Task JoinChat(UserConnection conn)
-        {
-            await Clients.All.SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined");
-        }
-
-        public async Task JoinSpecificChatRoom(UserConnection conn)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, conn.ChatRoom);
-
-            sharedDb.Connections[Context.ConnectionId] = conn;
-
-            await Clients.Group(conn.ChatRoom).SendAsync("JoinSpecificChatRoom", "admin", $"{conn.Username} has joined {conn.ChatRoom}");
-        }
-
-        public async Task SendMessage(string message)
-        {
-            if(sharedDb.Connections.TryGetValue(Context.ConnectionId, out UserConnection connection))
-            {
-                await Clients.Group(connection.ChatRoom).SendAsync("ReceiveMessage", connection.Username, message);
-            }
-        }
 
         public async Task<bool> SendFriendRequest(string nickname)
         {

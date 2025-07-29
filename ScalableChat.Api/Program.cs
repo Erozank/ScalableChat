@@ -1,5 +1,4 @@
 using Cassandra;
-using ScalableChat.Api.DataService;
 using ScalableChat.Api.Extensions;
 using ScalableChat.Api.Hubs;
 using ScalableChat.Api.Infrastucture;
@@ -11,8 +10,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 
@@ -63,7 +60,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddSingleton<SharedDb>();
 builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

@@ -2,10 +2,8 @@ import { Col, Container, Row } from "react-bootstrap";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import WaitingRoom from "./components/waitingroom";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import { useState, useEffect } from "react";
-import ChatRoom from "./components/ChatRoom";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -14,16 +12,15 @@ import DarkModeToggle from "./components/DarkModeToggle";
 import HeaderNav from "./components/HeaderNav";
 import Friends from "./components/Friends";
 
+
 function App() {
   const location = useLocation();
   const apiServer = import.meta.env.VITE_CHAT_API;
 
   const [connection, setConnection] = useState();
-  const [messages, setMessages] = useState([]);
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
   const [darkMode, setDarkMode] = useState(false);
-  const [friendRequests, setFriendRequests] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -41,24 +38,8 @@ function App() {
         .withAutomaticReconnect()
         .build();
 
-      newConnection.on("JoinSpecificChatRoom", (username, message) => {
-        setMessages((messages) => [...messages, { username, message }]);
-        console.log("msg: ", message);
-      });
-
-      newConnection.on("ReceiveMessage", (username, message) => {
-        setMessages((messages) => [...messages, { username, message }]);
-      });
-
       newConnection.on("ReceiveFriendRequest", (friendData) => {
-        setFriendRequests((prev) => {
-          const exists = prev.some((req) => req.userId === friendData.userId);
-          if (exists) return prev;
-          return [
-            ...prev,
-            { nickname: friendData.nickname, userId: friendData.userId }
-          ];
-        });
+        // Este evento ahora será manejado en el componente Friends
         console.log("Received friend request from: ", friendData.nickname);
       });
 
@@ -71,26 +52,6 @@ function App() {
         .catch((err) => console.log("SignalR Connection Error: ", err));
     }
   }, [isLoggedIn, connection, apiServer, jwt]);
-
-  const joinChatRoom = async (username, chatroom) => {
-    try {
-      if (connection) {
-        console.log("Joining chat room: ", chatroom);
-        await connection.invoke("JoinSpecificChatRoom", { username, chatroom });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const sendMessage = async (message) => {
-    try {
-      console.log("Sending message: ", message);
-      await connection.invoke("SendMessage", message);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const sendFriendRequest = async (friendName) => {
     if (!connection) return;
@@ -147,18 +108,7 @@ function App() {
                 element={
                   !isLoggedIn ? (
                     <Login setIsLoggedIn={setIsLoggedIn} setJwt={setJwt} />
-                  ) : !connection ? (
-                    <WaitingRoom
-                      joinChatRoom={joinChatRoom}
-                      sendFriendRequest={sendFriendRequest}
-                    />
-                  ) : (
-                    <ChatRoom
-                      messages={messages}
-                      sendMessage={sendMessage}
-                      sendFriendRequest={sendFriendRequest}
-                    />
-                  )
+                  ) : (<><p>chats</p></>)
                 }
               />
               <Route
@@ -176,10 +126,9 @@ function App() {
                     <Friends 
                       apiServer={apiServer} 
                       jwt={jwt} 
+                      connection={connection}
                       sendFriendRequest={sendFriendRequest} 
                       acceptFriendRequest={acceptFriendRequest} 
-                      friendRequests={friendRequests}
-                      setFriendRequests={setFriendRequests}
                     />
                   )
                 }

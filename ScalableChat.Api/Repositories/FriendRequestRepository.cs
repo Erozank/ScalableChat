@@ -28,19 +28,21 @@ namespace ScalableChat.Api.Repositories
             await _session.ExecuteAsync(boundStatement);
         }
 
-        public async Task<IEnumerable<Guid>> GetReceivedFriendRequests(Guid userId)
+        public async Task<IEnumerable<UserPreview>> GetReceivedFriendRequests(Guid userId)
         {
             if (_getReceivedFriendRequestsPrep == null)
             {
                 var statement = await _session.PrepareAsync("""
-                    SELECT from_user_id FROM scalable_chat.friend_requests 
-                    WHERE to_user_id = ? AND status = ?
+                    SELECT from_user_id, status FROM scalable_chat.friend_requests 
+                    WHERE to_user_id = ?
                     """);
                 Interlocked.CompareExchange(ref _getReceivedFriendRequestsPrep, statement, null);
             }
-            var boundStatement = _getReceivedFriendRequestsPrep!.Bind(userId, FriendshipStatus.Pending);
+            var boundStatement = _getReceivedFriendRequestsPrep!.Bind(userId);
             var resultSet = await _session.ExecuteAsync(boundStatement);
-            return resultSet.Select(row => row.GetValue<Guid>("from_user_id"));
+            var ids = resultSet.Where(x => x.GetValue<int>("status") == 0).Select(row => row.GetValue<Guid>("from_user_id"));
+
+            return await IdsToUserPreview(ids);
         }
 
         public async Task<FriendshipStatus?> GetFriendshipStatus(Guid fromUserId, Guid toUserId)
@@ -122,11 +124,16 @@ namespace ScalableChat.Api.Repositories
 
             var friendsIds = resultSet.Select(row => row.GetValue<Guid>("friend_id")).ToList();
 
+            return await IdsToUserPreview(friendsIds);
+        }
+
+        private async Task<IEnumerable<UserPreview>> IdsToUserPreview(IEnumerable<Guid> ids)
+        {
             var userPreviews = new List<UserPreview>();
 
-            foreach (var friendId in friendsIds)
+            foreach (var id in ids)
             {
-                var friend = await _userRepository.GetUserPreviewByUserId(friendId);
+                var friend = await _userRepository.GetUserPreviewByUserId(id);
                 if (friend != null)
                 {
                     userPreviews.Add(friend);
