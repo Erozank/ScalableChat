@@ -4,7 +4,7 @@ import FriendRequestList from "./FriendRequestList";
 import FriendList from "./FriendList";
 import axios from "axios";
 
-function Friends({ apiServer, jwt, connection, sendFriendRequest, acceptFriendRequest }) {
+function Friends({ apiServer, jwt, connection, sendFriendRequest, acceptFriendRequest, onStartChat }) {
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
 
@@ -53,10 +53,23 @@ function Friends({ apiServer, jwt, connection, sendFriendRequest, acceptFriendRe
       console.log("Received friend request from: ", friendData.nickname);
     };
 
+    const handleFriendRequestAccepted = (request) => {
+    console.log("Friend request accepted:", request);
+    setFriendRequests(friendRequests.filter((r) => r.userId !== request.userId));
+    setFriends((prev) => {
+      const exists = prev.some((f) => f.userId === request.userId);
+      if (exists) return prev;
+      return [...prev, request];
+    });
+  };
+
     connection.on("ReceiveFriendRequest", handleReceiveFriendRequest);
+
+    connection.on("FriendRequestAccepted", handleFriendRequestAccepted);
 
     return () => {
       connection.off("ReceiveFriendRequest", handleReceiveFriendRequest);
+      connection.off("FriendRequestAccepted", handleFriendRequestAccepted);
     };
   }, [connection]);
 
@@ -71,6 +84,8 @@ function Friends({ apiServer, jwt, connection, sendFriendRequest, acceptFriendRe
     });
   };
 
+  
+
   const handleRejectRequest = (request) => {
     console.log("Rejecting friend request:", request);
     setFriendRequests(friendRequests.filter((r) => r.userId !== request.userId));
@@ -84,7 +99,7 @@ function Friends({ apiServer, jwt, connection, sendFriendRequest, acceptFriendRe
         onAccept={handleAcceptRequest}
         onReject={handleRejectRequest}
       />
-      <FriendList friends={friends} />
+      <FriendList friends={friends} onStartChat={onStartChat} />
     </div>
   );
 }

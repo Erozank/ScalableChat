@@ -37,12 +37,18 @@ CREATE TABLE IF NOT EXISTS direct_chats (
     PRIMARY KEY (user_a, user_b)
 );
 
-CREATE TABLE IF NOT EXISTS user_chats (
+CREATE TABLE IF NOT EXISTS direct_chats_by_chat_id (
+    chat_id UUID PRIMARY KEY,
+    user_a UUID,
+    user_b UUID
+);
+
+CREATE TABLE user_chats (
     user_id UUID,
     chat_id UUID,
     last_message_at TIMESTAMP,
-    PRIMARY KEY (user_id, last_message_at)
-) WITH CLUSTERING ORDER BY (last_message_at DESC);
+    PRIMARY KEY (user_id, chat_id)
+);
 
 CREATE TABLE IF NOT EXISTS messages (
     chat_id UUID,

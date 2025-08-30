@@ -4,29 +4,44 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import { useState, useEffect } from "react";
+import { parseJwt } from "./utils/parseJwt";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import LogoutButton from "./components/LogoutButton";
 import DarkModeToggle from "./components/DarkModeToggle";
 import HeaderNav from "./components/HeaderNav";
 import Friends from "./components/Friends";
+import Chats from "./components/Chats";
 
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const apiServer = import.meta.env.VITE_CHAT_API;
 
   const [connection, setConnection] = useState();
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
   const [darkMode, setDarkMode] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     setJwt(token || "");
     setIsLoggedIn(!!token);
   }, [location]);
+
+  useEffect(() => {
+    if (jwt) {
+      const payload = parseJwt(jwt);
+      setNickname(payload?.nickname || "");
+      setUserId(payload?.sub || "");
+    } else {
+      setNickname("");
+    }
+  }, [jwt]);
 
   useEffect(() => {
     console.log("isLoggedIn: ", isLoggedIn);
@@ -37,12 +52,7 @@ function App() {
         })
         .withAutomaticReconnect()
         .build();
-
-      newConnection.on("ReceiveFriendRequest", (friendData) => {
-        // Este evento ahora será manejado en el componente Friends
-        console.log("Received friend request from: ", friendData.nickname);
-      });
-
+        
       newConnection
         .start()
         .then(() => {
@@ -73,6 +83,40 @@ function App() {
     }
   };
 
+  const handleStartChatFromFriends = async (friend) => {
+    // send a request to start a chat with the selected friend
+    if (!isLoggedIn) return;
+
+    try {
+      const response = await fetch(`${apiServer}/chat?friendId=${friend.userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${jwt}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Create chat response:', data);
+      const chatId = data.chatId;
+      
+      console.log('Chat started with ID:', chatId);
+
+      navigate('/');
+      
+      setTimeout(() => {
+        if (window.handleStartChat) {
+          window.handleStartChat({ ...friend, chatId });
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error starting chat:', error);
+    }
+  };
+
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
   }, [darkMode]);
@@ -99,7 +143,10 @@ function App() {
           <Container>
             <Row className="px-5 my-5">
               <Col sm="12">
-                <h1 className="font-weight-light">Welcome to the ChatApp </h1>
+                <h1 className="font-weight-light">ChatApp</h1>
+                {isLoggedIn && (
+                  <h4 className="mt-2">Welcome {nickname}</h4>
+                )}
               </Col>
             </Row>
             <Routes>
@@ -108,7 +155,15 @@ function App() {
                 element={
                   !isLoggedIn ? (
                     <Login setIsLoggedIn={setIsLoggedIn} setJwt={setJwt} />
-                  ) : (<><p>chats</p></>)
+                  ) : (
+                    <Chats 
+                      apiServer={apiServer} 
+                      jwt={jwt} 
+                      connection={connection}
+                      nickname={nickname}
+                      userId={userId}
+                    />
+                  )
                 }
               />
               <Route
@@ -128,7 +183,8 @@ function App() {
                       jwt={jwt} 
                       connection={connection}
                       sendFriendRequest={sendFriendRequest} 
-                      acceptFriendRequest={acceptFriendRequest} 
+                      acceptFriendRequest={acceptFriendRequest}
+                      onStartChat={handleStartChatFromFriends}
                     />
                   )
                 }

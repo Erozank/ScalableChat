@@ -5,10 +5,11 @@ using ScalableChat.Api.Repositories;
 
 namespace ScalableChat.Api.Hubs
 {
-    public class ChatHub(IUserRepository userRepository, IFriendRequestRepository friendsRepository) : Hub
+    public class ChatHub(IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
     {
         private readonly IUserRepository userRepository = userRepository;
         private readonly IFriendRequestRepository friendsRepository = friendsRepository;
+        private readonly IChatRepository chatRepository = chatRepository;
 
         public async Task<bool> SendFriendRequest(string nickname)
         {
@@ -55,7 +56,14 @@ namespace ScalableChat.Api.Hubs
             if (friendshipStatus == FriendshipStatus.Pending)
             {
                 await friendsRepository.AcceptFriendRequestAsync(userId, recipientUserId);
-                await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", userId);
+                
+                var user = new UserPreview
+                {
+                    UserId = recipientUserId,
+                    Nickname = Context.User!.Claims.First(x => x.Type == "nickname").Value
+                };
+
+                await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", user);
             }
         }
 
@@ -67,6 +75,13 @@ namespace ScalableChat.Api.Hubs
             {
                 await friendsRepository.UpdateFriendshipStatus(userId, recipientUserId, FriendshipStatus.Rejected);
             }
+        }
+
+        public async Task SendMessage(Guid chatId, Guid friendId, string content)
+        {
+            var userId = Guid.Parse(Context.UserIdentifier!);
+            var message = await chatRepository.SendMessage(userId, friendId, chatId, content);
+            await Clients.User(friendId.ToString()!).SendAsync("ReceiveMessage", message);
         }
     }
 }

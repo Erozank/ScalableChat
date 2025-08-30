@@ -10,6 +10,7 @@ namespace ScalableChat.Api.Repositories
         private PreparedStatement? _insertPrep;
         private PreparedStatement? _getByEmailPrep;
         private PreparedStatement? _getUserIdByNickname;
+        private PreparedStatement? _getNicknameByUserId;
 
         public UserRepository(Cassandra.ISession session)
         {
@@ -75,12 +76,12 @@ namespace ScalableChat.Api.Repositories
 
         public async Task<UserPreview?> GetUserPreviewByUserId(Guid userId)
         {
-            if (_getUserIdByNickname == null)
+            if (_getNicknameByUserId == null)
             {
                 var statement = await _session.PrepareAsync("SELECT nickname FROM scalable_chat.users WHERE user_id = ?");
-                Interlocked.CompareExchange(ref _getUserIdByNickname, statement, null);
+                Interlocked.CompareExchange(ref _getNicknameByUserId, statement, null);
             }
-            var boundStatement = _getUserIdByNickname!.Bind(userId);
+            var boundStatement = _getNicknameByUserId!.Bind(userId);
             var rowSet = await _session.ExecuteAsync(boundStatement);
             var row = rowSet.FirstOrDefault();
 

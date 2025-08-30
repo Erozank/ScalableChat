@@ -47,7 +47,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
-
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -64,6 +63,7 @@ builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddSingleton<ICluster>(sp => {
     return Cluster.Builder().AddContactPoint("localhost")
                     .WithPort(9042)

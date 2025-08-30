@@ -20,21 +20,21 @@ namespace ScalableChat.Api.Controllers
             // Validar el request
             if (!ModelState.IsValid)
             {
-                _logger.LogError("Invalid request: {0}", request);
+                _logger.LogWarning("Invalid request: {0}", request);
                 return BadRequest(ModelState);
             }
             // Validar el usuario
             var user = await _userRepository.GetByEmail(request.Email);
             if (user == null)
             {
-                _logger.LogError("Invalid credentials for user: {0}", request.Email);
+                _logger.LogWarning("Invalid credentials for user: {0}", request.Email);
                 return Unauthorized();
             }
 
             bool isCorrectPassword = _passwordHasher.Verify(request.Password, user.PasswordHash);
             if (!isCorrectPassword)
             {
-                _logger.LogError("Invalid credentials for user: {0}", request.Email);
+                _logger.LogWarning("Invalid credentials for user: {0}", request.Email);
                 return Unauthorized();
             }
 
@@ -50,14 +50,14 @@ namespace ScalableChat.Api.Controllers
             // Validar el request
             if (!ModelState.IsValid)
             {
-                _logger.LogError("Invalid request: {0}", request);
+                _logger.LogWarning("Invalid request: {0}", request);
                 return BadRequest(ModelState);
             }
             // Validar si el email ya está registradoç
             bool existsUser = await _userRepository.Exists(request.Email);
             if (existsUser)
             {
-                _logger.LogError("Email already registered: {0}", request.Email);
+                _logger.LogWarning("Email already registered: {0}", request.Email);
                 return Conflict();
             }
             // Crear el usuario

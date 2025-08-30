@@ -25,7 +25,7 @@ namespace ScalableChat.Api.Controllers
             return Ok(new { friends });
         }
 
-        // GET /friends
+        // GET /friend-requests
         [Authorize]
         [HttpGet("friend-requests")]
         public async Task<IActionResult> GetReceivedFriendRequests()
