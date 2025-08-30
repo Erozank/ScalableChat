@@ -56,6 +56,18 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
     e.preventDefault();
     if (!newMessage.trim() || !connection) return;
 
+    // Create local message
+    const localMessage = {
+      id: Math.floor(Math.random() * 1e12),
+      createdAt: new Date().toISOString(),
+      senderId: userId,
+      chatId: selectedChat.chatId,
+      content: newMessage.trim()
+    };
+
+    // Add local message to the messages list
+    setMessages(prev => [...prev, localMessage]);
+
     try {
       console.log("Sending message:", newMessage);
       await connection.invoke("SendMessage", selectedChat?.chatId, selectedChat?.friendId, newMessage.trim());
@@ -95,15 +107,15 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
                   key={message.id}
                   className={`message-item ${isOwn ? "message-right" : "message-left"}`}
                 >
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div className="flex-grow-1">
+                  <div className="d-flex flex-column align-items-start">
+                    <div className="flex-grow-1 w-100">
+                      <div className="message-timestamp mb-1 text-muted" style={{ fontSize: '0.8em' }}>
+                        {formatTimestamp(message.createdAt)}
+                      </div>
                       <div className="message-sender">
                         {isOwn ? nickname : selectedChat?.name}
                       </div>
                       <div className="message-content">{message.content}</div>
-                    </div>
-                    <div className="message-timestamp">
-                      {formatTimestamp(message.createdAt)}
                     </div>
                   </div>
                 </div>
