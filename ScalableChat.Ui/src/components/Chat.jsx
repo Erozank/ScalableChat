@@ -45,10 +45,21 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
       }
     };
 
+    const handleUpdateMessageId = (oldId, newId) => {
+      setMessages(prev => {
+        console.log('Messages before updating id:', prev);
+        const updatedMessages = prev.map(m => m.id === oldId ? { ...m, id: newId } : m);
+        console.log('Messages after updating id:', updatedMessages);
+        return updatedMessages;
+      });
+    }
+
     connection.on("ReceiveMessage", handleReceiveMessage);
+    connection.on("UpdateMessageId", handleUpdateMessageId);
 
     return () => {
       connection.off("ReceiveMessage", handleReceiveMessage);
+      connection.off("UpdateMessageId", handleUpdateMessageId);
     };
   }, [connection, selectedChat?.chatId, onNewMessage]);
 
@@ -58,7 +69,7 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
 
     // Create local message
     const localMessage = {
-      id: Math.floor(Math.random() * 1e12),
+      id: Math.floor(Math.random() * 1e12).toString(),
       createdAt: new Date().toISOString(),
       senderId: userId,
       chatId: selectedChat.chatId,
@@ -69,8 +80,7 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
     setMessages(prev => [...prev, localMessage]);
 
     try {
-      console.log("Sending message:", newMessage);
-      await connection.invoke("SendMessage", selectedChat?.chatId, selectedChat?.friendId, newMessage.trim());
+      await connection.invoke("SendMessage", selectedChat?.chatId, selectedChat?.friendId, localMessage.content, localMessage.id);
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);

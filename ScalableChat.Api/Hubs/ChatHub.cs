@@ -77,11 +77,12 @@ namespace ScalableChat.Api.Hubs
             }
         }
 
-        public async Task SendMessage(Guid chatId, Guid friendId, string content)
+        public async Task SendMessage(Guid chatId, Guid friendId, string content, string tempMessageId)
         {
             var userId = Guid.Parse(Context.UserIdentifier!);
             var message = await chatRepository.SendMessage(userId, friendId, chatId, content);
             await Clients.User(friendId.ToString()!).SendAsync("ReceiveMessage", message);
+            await Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
         }
     }
 }
