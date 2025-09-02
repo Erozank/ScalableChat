@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const AddFriend = ({ onAddFriend }) => {
-  const [friendName, setFriendName] = useState('');
+  const [friendName, setFriendName] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (friendName.trim() !== '') {
-      onAddFriend(friendName.trim());
-      setFriendName('');
+    const trimmed = friendName.trim();
+    if (trimmed) {
+      onAddFriend(trimmed);
+      setFriendName("");
     }
   };
 
   return (
-    <form className="d-flex align-items-center" onSubmit={handleSubmit}>
+    <form className="d-flex align-items-center" onSubmit={handleSubmit} autoComplete="off">
       <input
         type="text"
         className="form-control me-2"
         placeholder="Nickname"
         value={friendName}
         onChange={(e) => setFriendName(e.target.value)}
+        aria-label="Friend nickname"
       />
-      <button type="submit" className="btn btn-primary">
+      <button type="submit" className="btn btn-primary" disabled={!friendName.trim()}>
         Add friend
       </button>
     </form>

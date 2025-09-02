@@ -1,19 +1,23 @@
 
-const MessageContainer = ({messages}) => {
+const MessageContainer = ({ messages }) => {
+    if (!messages || !messages.length) {
+        return <div className="text-muted">No messages yet.</div>;
+    }
     return (
-        <div>
-            {messages.map((message, index) => {
-                return (
-                    <table striped bordered key={index}>
+        <div className="message-container">
+            <table className="table table-striped table-bordered">
+                <tbody>
+                    {messages.map((message, index) => (
                         <tr key={index}>
-                            {message.username}: {message.message}
+                            <td>
+                                <strong>{message.username}:</strong> {message.message}
+                            </td>
                         </tr>
-                    </table>
-                )
-            })}
+                    ))}
+                </tbody>
+            </table>
         </div>
-    )
+    );
+};
 
- }
-
-export default MessageContainer
+export default MessageContainer;

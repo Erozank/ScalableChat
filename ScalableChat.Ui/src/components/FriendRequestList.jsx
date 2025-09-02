@@ -1,11 +1,11 @@
 import React from "react";
 
-function FriendRequestList({ requests, onAccept, onReject }) {
+const FriendRequestList = ({ requests = [], onAccept, onReject }) => {
   return (
     <div className="friend-request-list">
       <h4>Friend Requests</h4>
       {requests.length === 0 ? (
-        <p>No friend requests.</p>
+        <p className="text-muted">No friend requests.</p>
       ) : (
         <ul>
           {requests.map((req) => (
@@ -14,9 +14,7 @@ function FriendRequestList({ requests, onAccept, onReject }) {
               <button
                 className="btn btn-success btn-sm ms-2"
                 title="Accept"
-                onClick={() => {
-                  if (onAccept) onAccept(req);
-                }}
+                onClick={() => onAccept && onAccept(req)}
                 style={{ padding: "0.2em 0.6em" }}
               >
                 <i className="bi bi-check-lg"></i>
@@ -35,6 +33,6 @@ function FriendRequestList({ requests, onAccept, onReject }) {
       )}
     </div>
   );
-}
+};
 
 export default FriendRequestList;

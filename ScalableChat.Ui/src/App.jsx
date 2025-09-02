@@ -1,26 +1,27 @@
+import React, { useState, useEffect } from "react";
 import { Col, Container, Row } from "react-bootstrap";
-import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { HubConnectionBuilder } from "@microsoft/signalr";
-import { useState, useEffect } from "react";
-import { useInitialChatData } from "./utils/useInitialChatData";
-import { parseJwt } from "./utils/parseJwt";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import LogoutButton from "./components/LogoutButton";
 import DarkModeToggle from "./components/DarkModeToggle";
 import HeaderNav from "./components/HeaderNav";
 import Friends from "./components/Friends";
 import Chats from "./components/Chats";
+import { useInitialChatData } from "./utils/useInitialChatData";
+import { parseJwt } from "./utils/parseJwt";
+import "./App.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
-
-function App() {
+// App principal
+const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const apiServer = import.meta.env.VITE_CHAT_API;
 
+  // Estados globales
   const [connection, setConnection] = useState();
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
@@ -28,12 +29,14 @@ function App() {
   const [nickname, setNickname] = useState("");
   const [userId, setUserId] = useState("");
 
+  // Sincroniza JWT y login al cambiar de ruta
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     setJwt(token || "");
     setIsLoggedIn(!!token);
   }, [location]);
 
+  // Decodifica JWT para obtener nickname y userId
   useEffect(() => {
     if (jwt) {
       const payload = parseJwt(jwt);
@@ -41,11 +44,12 @@ function App() {
       setUserId(payload?.sub || "");
     } else {
       setNickname("");
+      setUserId("");
     }
   }, [jwt]);
 
+  // Inicializa conexión SignalR si está logueado
   useEffect(() => {
-    console.log("isLoggedIn: ", isLoggedIn);
     if (isLoggedIn && !connection) {
       const newConnection = new HubConnectionBuilder()
         .withUrl(`${apiServer}/chat`, {
@@ -53,7 +57,7 @@ function App() {
         })
         .withAutomaticReconnect()
         .build();
-        
+
       newConnection
         .start()
         .then(() => {
