@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import { useState, useEffect } from "react";
+import { useInitialChatData } from "./utils/useInitialChatData";
 import { parseJwt } from "./utils/parseJwt";
 import Register from "./components/Register";
 import Login from "./components/Login";
@@ -117,6 +118,14 @@ function App() {
     }
   };
 
+
+  // Global chat/friend state, loaded only once on login
+  const {
+    friends, setFriends,
+    friendRequests, setFriendRequests,
+    chats, setChats
+  } = useInitialChatData(isLoggedIn, apiServer, jwt);
+
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
   }, [darkMode]);
@@ -156,12 +165,14 @@ function App() {
                   !isLoggedIn ? (
                     <Login setIsLoggedIn={setIsLoggedIn} setJwt={setJwt} />
                   ) : (
-                    <Chats 
-                      apiServer={apiServer} 
-                      jwt={jwt} 
+                    <Chats
+                      apiServer={apiServer}
+                      jwt={jwt}
                       connection={connection}
                       nickname={nickname}
                       userId={userId}
+                      chats={chats}
+                      setChats={setChats}
                     />
                   )
                 }
@@ -178,13 +189,15 @@ function App() {
                   !isLoggedIn ? (
                     <Navigate to="/" />
                   ) : (
-                    <Friends 
-                      apiServer={apiServer} 
-                      jwt={jwt} 
+                    <Friends
                       connection={connection}
-                      sendFriendRequest={sendFriendRequest} 
+                      sendFriendRequest={sendFriendRequest}
                       acceptFriendRequest={acceptFriendRequest}
                       onStartChat={handleStartChatFromFriends}
+                      friends={friends}
+                      setFriends={setFriends}
+                      friendRequests={friendRequests}
+                      setFriendRequests={setFriendRequests}
                     />
                   )
                 }

@@ -2,11 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import ChatList from './ChatList';
 import Chat from './Chat';
-import axios from 'axios';
 import '../styles/chat.css';
 
-const Chats = ({ apiServer, jwt, connection, nickname, userId }) => {
-  const [chats, setChats] = useState([]);
+const Chats = ({ connection, nickname, userId, chats, setChats }) => {
   const [selectedChat, setSelectedChat] = useState(null);
 
 
@@ -15,14 +13,13 @@ const Chats = ({ apiServer, jwt, connection, nickname, userId }) => {
   const handleSelectChat = useCallback((chat) => {
     console.log('Selected chat:', chat);
     setSelectedChat(chat);
-    
-  // Mark as read
+    // Mark as read
     setChats(prevChats =>
       prevChats.map(c =>
         c.id === chat.id ? { ...c, unreadCount: 0 } : c
       )
     );
-  }, []);
+  }, [setChats]);
 
   // Function to handle new messages
   const handleNewMessage = useCallback((chatId, message) => {
@@ -31,12 +28,10 @@ const Chats = ({ apiServer, jwt, connection, nickname, userId }) => {
         if (chat.id === chatId) {
           const updatedMessages = [...chat.messages];
           const messageExists = updatedMessages.some(m => m.id === message.id);
-          
           if (!messageExists) {
             updatedMessages.push(message);
             updatedMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
           }
-
           return {
             ...chat,
             messages: updatedMessages,
@@ -46,37 +41,9 @@ const Chats = ({ apiServer, jwt, connection, nickname, userId }) => {
         return chat;
       })
     );
-  }, [selectedChat]);
+  }, [selectedChat, setChats]);
 
-  // Load chats
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const response = await axios.get(`${apiServer}/chats`, {
-          headers: { Authorization: `Bearer ${jwt}` },
-        });
-        
-        const chatsData = response.data || [];
-        const formattedChats = chatsData.map(chat => ({
-          chatId: chat.chatId,
-          name: chat.friend.nickname || 'No name',
-          friendId: chat.friend.userId,
-          messages: (chat.messages || []).sort(
-            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-          ),
-          unreadCount: 0
-        }));
-        
-        setChats(formattedChats);
-      } catch (error) {
-        console.error('Error fetching chats:', error);
-      }
-    };
-
-    if (jwt && apiServer) {
-      fetchChats();
-    }
-  }, [apiServer, jwt]);
+  // ...existing code...
 
   // Listen to global SignalR events for all chats
   useEffect(() => {
