@@ -20,7 +20,6 @@ namespace ScalableChat.Api.Infrastucture
                 Subject = new ClaimsIdentity(
                 [
                     new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                    new(JwtRegisteredClaimNames.Email, user.Email),
                     new(JwtRegisteredClaimNames.Nickname, user.Nickname)
                 ]),
                 Expires = DateTime.UtcNow.AddHours(1),

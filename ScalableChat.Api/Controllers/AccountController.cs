@@ -24,17 +24,17 @@ namespace ScalableChat.Api.Controllers
                 return BadRequest(ModelState);
             }
             // Validar el usuario
-            var user = await _userRepository.GetByEmail(request.Email);
+            var user = await _userRepository.GetByNickname(request.Nickname);
             if (user == null)
             {
-                _logger.LogWarning("Invalid credentials for user: {0}", request.Email);
+                _logger.LogWarning("Invalid credentials for user: {0}", request.Nickname);
                 return Unauthorized();
             }
 
             bool isCorrectPassword = _passwordHasher.Verify(request.Password, user.PasswordHash);
             if (!isCorrectPassword)
             {
-                _logger.LogWarning("Invalid credentials for user: {0}", request.Email);
+                _logger.LogWarning("Invalid credentials for user: {0}", request.Nickname);
                 return Unauthorized();
             }
 
@@ -53,11 +53,11 @@ namespace ScalableChat.Api.Controllers
                 _logger.LogWarning("Invalid request: {0}", request);
                 return BadRequest(ModelState);
             }
-            // Validar si el email ya está registradoç
-            bool existsUser = await _userRepository.Exists(request.Email);
+            // Nickname already exists
+            bool existsUser = await _userRepository.Exists(request.Nickname);
             if (existsUser)
             {
-                _logger.LogWarning("Email already registered: {0}", request.Email);
+                _logger.LogWarning("Nickname already registered: {0}", request.Nickname);
                 return Conflict();
             }
             // Crear el usuario
@@ -65,7 +65,6 @@ namespace ScalableChat.Api.Controllers
             {
                 Id = Guid.NewGuid(),
                 Nickname = request.Nickname,
-                Email = request.Email,
                 PasswordHash = _passwordHasher.Hash(request.Password)
             };
             await _userRepository.Insert(user);

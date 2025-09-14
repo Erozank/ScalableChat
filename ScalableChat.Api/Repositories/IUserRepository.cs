@@ -6,8 +6,8 @@ namespace ScalableChat.Api.Repositories
 {
     public interface IUserRepository
     {
-        Task<bool> Exists(string email);
-        Task<UserEntity?> GetByEmail(string email);
+        Task<bool> Exists(string nickname);
+        Task<UserEntity?> GetByNickname(string nickname);
         Task<UserPreview?> GetUserPreviewByUserId(Guid userId);
         Task<Guid?> GetUserIdByNickname(string nickname);
         Task Insert(UserEntity user);
