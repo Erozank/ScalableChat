@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 function Register({ setIsLoggedIn, setJwt }) {
   const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -21,7 +20,7 @@ function Register({ setIsLoggedIn, setJwt }) {
       const response = await fetch(`${apiServer}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, email, password }),
+        body: JSON.stringify({ nickname, password }),
       });
 
       if (!response.ok) {
@@ -33,7 +32,6 @@ function Register({ setIsLoggedIn, setJwt }) {
 
       setSuccess(true);
       setNickname('');
-      setEmail('');
       setPassword('');
       setJwt(data.token)
       setIsLoggedIn(true);
@@ -60,18 +58,6 @@ function Register({ setIsLoggedIn, setJwt }) {
               placeholder="Enter nickname"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="formEmail" className="form-label">Email</label>
-            <input
-              id="formEmail"
-              type="email"
-              className="form-input"
-              placeholder="Enter email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>

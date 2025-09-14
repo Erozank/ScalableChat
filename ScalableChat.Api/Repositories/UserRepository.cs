@@ -8,7 +8,7 @@ namespace ScalableChat.Api.Repositories
     {
         private readonly Cassandra.ISession _session;
         private PreparedStatement? _insertPrep;
-        private PreparedStatement? _getByEmailPrep;
+        private PreparedStatement? _getByNicknamePrep;
         private PreparedStatement? _getUserIdByNickname;
         private PreparedStatement? _getNicknameByUserId;
 
@@ -17,9 +17,9 @@ namespace ScalableChat.Api.Repositories
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
 
-        public async Task<bool> Exists(string email)
+        public async Task<bool> Exists(string nickname)
         {
-            var user = await GetByEmail(email);
+            var user = await GetByNickname(nickname);
             return user != null;
         }
 
@@ -27,32 +27,30 @@ namespace ScalableChat.Api.Repositories
         {
             if (_insertPrep == null)
             {
-                var statement = await _session.PrepareAsync("INSERT INTO scalable_chat.users (user_id, nickname, email, password_hash) VALUES (?, ?, ?, ?)");
+                var statement = await _session.PrepareAsync("INSERT INTO scalable_chat.users (user_id, nickname, password_hash) VALUES (?, ?, ?)");
                 Interlocked.CompareExchange(ref _insertPrep, statement, null);
             }
 
             if (user.Id == Guid.Empty) throw new ArgumentException("User ID cannot be empty.", nameof(user));
             if (string.IsNullOrWhiteSpace(user.Nickname)) throw new ArgumentException("Nickname cannot be empty.", nameof(user));
-            if (string.IsNullOrWhiteSpace(user.Email)) throw new ArgumentException("Email cannot be empty.", nameof(user));
 
             var boundStatement = _insertPrep!.Bind(
                 user.Id,
                 user.Nickname,
-                user.Email,
                 user.PasswordHash
             );
             await _session.ExecuteAsync(boundStatement);
         }
 
-        public async Task<UserEntity?> GetByEmail(string email)
+        public async Task<UserEntity?> GetByNickname(string nickname)
         {
-            if (_getByEmailPrep == null)
+            if (_getByNicknamePrep == null)
             {
-                var statement = await _session.PrepareAsync("SELECT user_id, nickname, email, password_hash FROM scalable_chat.users WHERE email = ?");
-                Interlocked.CompareExchange(ref _getByEmailPrep, statement, null);
+                var statement = await _session.PrepareAsync("SELECT user_id, nickname, password_hash FROM scalable_chat.users WHERE nickname = ?");
+                Interlocked.CompareExchange(ref _getByNicknamePrep, statement, null);
             }
 
-            var boundStatement = _getByEmailPrep!.Bind(email);
+            var boundStatement = _getByNicknamePrep!.Bind(nickname);
             var rowSet = await _session.ExecuteAsync(boundStatement);
             var row = rowSet.FirstOrDefault();
 
@@ -99,7 +97,6 @@ namespace ScalableChat.Api.Repositories
             {
                 Id = row.GetValue<Guid>("user_id"),
                 Nickname = row.GetValue<string>("nickname"), 
-                Email = row.GetValue<string>("email"),
                 PasswordHash = row.GetValue<string>("password_hash")
             };
         }

@@ -1,16 +1,13 @@
 CREATE KEYSPACE IF NOT EXISTS scalable_chat
-WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
+WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 2 };
 
 USE scalable_chat;
 
 CREATE TABLE IF NOT EXISTS users (
 user_id uuid,
 nickname text,
-email text,
 password_hash text,
 PRIMARY KEY (user_id));
-
-CREATE INDEX IF NOT EXISTS ON users(email);
 
 CREATE INDEX IF NOT EXISTS ON users(nickname);
 

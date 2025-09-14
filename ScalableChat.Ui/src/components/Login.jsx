@@ -4,7 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 function Login({ setIsLoggedIn, setJwt }) {
-  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const apiServer = import.meta.env.VITE_CHAT_API;
@@ -14,7 +14,7 @@ function Login({ setIsLoggedIn, setJwt }) {
     setErrorMsg("");
     try {
       const response = await axios.post(`${apiServer}/login`, {
-        email,
+        nickname,
         password,
       });
       if (response.status === 200) {
@@ -24,7 +24,7 @@ function Login({ setIsLoggedIn, setJwt }) {
         setIsLoggedIn(true);
       }
     } catch (error) {
-      setErrorMsg("Incorrect email or password");
+      setErrorMsg("Incorrect nickname or password");
       console.error("Login failed:", error);
     }
   };
@@ -34,11 +34,11 @@ function Login({ setIsLoggedIn, setJwt }) {
       <h2 className="form-title">Login</h2>
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
-          <label>Email:</label>
+          <label>Nickname:</label>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
             required
             className="form-input"
           />
