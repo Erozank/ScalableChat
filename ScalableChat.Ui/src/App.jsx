@@ -171,14 +171,62 @@ const App = () => {
       });
     };
 
+    const handleReceiveMessage = (message) => {
+      console.log('Received message:', message);
+      
+      setChats(prevChats => {
+        // Check if chat exists
+        const existingChat = prevChats.find(chat => chat.chatId === message.chatId);
+        
+        if (!existingChat) {
+          // Create new chat if it doesn't exist
+          const newChat = {
+            chatId: message.chatId,
+            name: message.senderNickname || 'No name',
+            friendId: message.senderId,
+            messages: [message],
+            unreadCount: 1
+          };
+          return [...prevChats, newChat];
+        }
+
+        // Update existing chat
+        return prevChats.map(chat => {
+          if (chat.chatId === message.chatId) {
+            const messages = [...(chat.messages || [])];
+            const messageExists = messages.some(m => m.id === message.id);
+            
+            if (!messageExists) {
+              messages.push(message);
+              messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            }
+
+            // Only increment unreadCount if we're not in the chat view or the chat isn't selected
+            const isInChatView = location.pathname === '/';
+            const isChatSelected = window.selectChat?.chatId === message.chatId;
+            const shouldIncrementUnread = !isInChatView || !isChatSelected;
+
+            return {
+              ...chat,
+              messages,
+              unreadCount: shouldIncrementUnread ? (chat.unreadCount || 0) + 1 : chat.unreadCount
+            };
+          }
+          return chat;
+        });
+      });
+    };
+
     connection.on("ReceiveFriendRequest", handleReceiveFriendRequest);
     connection.on("FriendRequestAccepted", handleFriendRequestAccepted);
+    connection.on("ReceiveMessage", handleReceiveMessage);
 
     return () => {
       connection.off("ReceiveFriendRequest", handleReceiveFriendRequest);
       connection.off("FriendRequestAccepted", handleFriendRequestAccepted);
+      connection.off("ReceiveMessage", handleReceiveMessage);
     };
-  }, [connection, setFriendRequests, setFriends]);
+  }, [connection, setFriendRequests, setFriends, setChats, location.pathname]);
 
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";

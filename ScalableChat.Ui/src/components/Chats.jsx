@@ -29,57 +29,7 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
 
 
 
-  // Listen to global SignalR events for all chats
-  useEffect(() => {
-    if (!connection) return;
-
-    const handleReceiveMessage = (message) => {
-      console.log('Received message:', message);
-      
-      setChats(prevChats => {
-        // Check if chat exists
-        const existingChat = prevChats.find(chat => chat.chatId === message.chatId);
-        
-        if (!existingChat) {
-          // Create new chat if it doesn't exist
-          const newChat = {
-            chatId: message.chatId,
-            name: message.senderNickname || 'No name',
-            friendId: message.senderId,
-            messages: [message],
-            unreadCount: 1
-          };
-          return [...prevChats, newChat];
-        }
-
-        // Update existing chat
-        return prevChats.map(chat => {
-          if (chat.chatId === message.chatId) {
-            const messages = [...(chat.messages || [])];
-            const messageExists = messages.some(m => m.id === message.id);
-            
-            if (!messageExists) {
-              messages.push(message);
-              messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            }
-
-            return {
-              ...chat,
-              messages,
-              unreadCount: selectedChat?.chatId === message.chatId ? 0 : (chat.unreadCount || 0) + 1
-            };
-          }
-          return chat;
-        });
-      });
-    };
-
-    connection.on("ReceiveMessage", handleReceiveMessage);
-
-    return () => {
-      connection.off("ReceiveMessage", handleReceiveMessage);
-    };
-  }, [connection, selectedChat, setChats]);
+  // No need for global SignalR events here as they are now handled in App.jsx
 
   return (
     <Row className="g-3">
