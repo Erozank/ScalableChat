@@ -10,7 +10,7 @@ const FriendRequestList = ({ requests = [], onAccept, onReject }) => {
         <ul>
           {requests.map((req) => (
             <li key={req.userId} className="d-flex align-items-center gap-2">
-              <strong>{req.nickname}</strong> (ID: {req.userId})
+              <strong>{req.nickname}</strong>
               <button
                 className="btn btn-success btn-sm ms-2"
                 title="Accept"

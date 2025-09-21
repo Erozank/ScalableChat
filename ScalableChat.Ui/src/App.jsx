@@ -15,13 +15,13 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-// App principal
+// Main App component
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const apiServer = import.meta.env.VITE_CHAT_API;
 
-  // Estados globales
+  // Global states
   const [connection, setConnection] = useState();
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
@@ -29,14 +29,14 @@ const App = () => {
   const [nickname, setNickname] = useState("");
   const [userId, setUserId] = useState("");
 
-  // Sincroniza JWT y login al cambiar de ruta
+  // Synchronizes JWT and login state when route changes
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     setJwt(token || "");
     setIsLoggedIn(!!token);
   }, [location]);
 
-  // Decodifica JWT para obtener nickname y userId
+  // Decodes JWT to get nickname and userId
   useEffect(() => {
     if (jwt) {
       const payload = parseJwt(jwt);
@@ -48,7 +48,7 @@ const App = () => {
     }
   }, [jwt]);
 
-  // Inicializa conexión SignalR si está logueado
+  // Initializes SignalR connection if user is logged in
   useEffect(() => {
     if (isLoggedIn && !connection) {
       const newConnection = new HubConnectionBuilder()
@@ -89,7 +89,7 @@ const App = () => {
   };
 
   const handleStartChatFromFriends = async (friend) => {
-    // send a request to start a chat with the selected friend
+    // Send a request to start a chat with the selected friend
     if (!isLoggedIn) return;
 
     try {
@@ -108,9 +108,24 @@ const App = () => {
       console.log('Create chat response:', data);
       const chatId = data.chatId;
       
+      // Create new chat with required structure
+      const newChat = {
+        chatId: chatId,
+        friendId: friend.userId,
+        messages: [],
+        name: friend.nickname,
+        unreadCount: 0
+      };
+
+      // Add the new chat to the chats list
+      setChats(prevChats => [...prevChats, newChat]);
+      
       console.log('Chat started with ID:', chatId);
 
       navigate('/');
+      
+      // Store the chat to select it after navigation
+      window.selectChat = newChat;
       
       setTimeout(() => {
         if (window.handleStartChat) {
@@ -130,6 +145,89 @@ const App = () => {
     chats, setChats
   } = useInitialChatData(isLoggedIn, apiServer, jwt);
 
+  // Global event handlers for friend requests
+  useEffect(() => {
+    if (!connection) return;
+
+    const handleReceiveFriendRequest = (friendData) => {
+      setFriendRequests((prev) => {
+        const exists = prev.some((req) => req.userId === friendData.userId);
+        if (exists) return prev;
+        return [
+          ...prev,
+          { nickname: friendData.nickname, userId: friendData.userId }
+        ];
+      });
+      console.log("Received friend request from: ", friendData.nickname);
+    };
+
+    const handleFriendRequestAccepted = (request) => {
+      console.log("Friend request accepted:", request);
+      setFriendRequests((prev) => prev.filter((r) => r.userId !== request.userId));
+      setFriends((prev) => {
+        const exists = prev.some((f) => f.userId === request.userId);
+        if (exists) return prev;
+        return [...prev, request];
+      });
+    };
+
+    const handleReceiveMessage = (message) => {
+      console.log('Received message:', message);
+      
+      setChats(prevChats => {
+        // Check if chat exists
+        const existingChat = prevChats.find(chat => chat.chatId === message.chatId);
+        
+        if (!existingChat) {
+          // Create new chat if it doesn't exist
+          const newChat = {
+            chatId: message.chatId,
+            name: message.senderNickname || 'No name',
+            friendId: message.senderId,
+            messages: [message],
+            unreadCount: 1
+          };
+          return [...prevChats, newChat];
+        }
+
+        // Update existing chat
+        return prevChats.map(chat => {
+          if (chat.chatId === message.chatId) {
+            const messages = [...(chat.messages || [])];
+            const messageExists = messages.some(m => m.id === message.id);
+            
+            if (!messageExists) {
+              messages.push(message);
+              messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            }
+
+            // Only increment unreadCount if we're not in the chat view or the chat isn't selected
+            const isInChatView = location.pathname === '/';
+            const isChatSelected = window.selectChat?.chatId === message.chatId;
+            const shouldIncrementUnread = !isInChatView || !isChatSelected;
+
+            return {
+              ...chat,
+              messages,
+              unreadCount: shouldIncrementUnread ? (chat.unreadCount || 0) + 1 : chat.unreadCount
+            };
+          }
+          return chat;
+        });
+      });
+    };
+
+    connection.on("ReceiveFriendRequest", handleReceiveFriendRequest);
+    connection.on("FriendRequestAccepted", handleFriendRequestAccepted);
+    connection.on("ReceiveMessage", handleReceiveMessage);
+
+    return () => {
+      connection.off("ReceiveFriendRequest", handleReceiveFriendRequest);
+      connection.off("FriendRequestAccepted", handleFriendRequestAccepted);
+      connection.off("ReceiveMessage", handleReceiveMessage);
+    };
+  }, [connection, setFriendRequests, setFriends, setChats, location.pathname]);
+
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
   }, [darkMode]);
@@ -138,7 +236,12 @@ const App = () => {
     <>
       <header>
         <div className="d-flex justify-content-between align-items-center px-4 py-2">
-          {isLoggedIn && <HeaderNav />}
+          {isLoggedIn && (
+            <HeaderNav 
+              pendingRequestsCount={friendRequests.length} 
+              unreadMessagesCount={chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0)}
+            />
+          )}
           <DarkModeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
           {isLoggedIn && (
             <div className="ms-3">
@@ -177,6 +280,7 @@ const App = () => {
                       userId={userId}
                       chats={chats}
                       setChats={setChats}
+                      onChatCreated={(chat) => window.selectChat = chat}
                     />
                   )
                 }

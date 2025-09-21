@@ -15,39 +15,9 @@ function Friends({
   setFriendRequests
 }) {
 
-  // Suscripción al evento SignalR para recibir friend requests
   useEffect(() => {
-    if (!connection) return;
 
-    const handleReceiveFriendRequest = (friendData) => {
-      setFriendRequests((prev) => {
-        const exists = prev.some((req) => req.userId === friendData.userId);
-        if (exists) return prev;
-        return [
-          ...prev,
-          { nickname: friendData.nickname, userId: friendData.userId }
-        ];
-      });
-      console.log("Received friend request from: ", friendData.nickname);
-    };
-
-    const handleFriendRequestAccepted = (request) => {
-      console.log("Friend request accepted:", request);
-      setFriendRequests((prev) => prev.filter((r) => r.userId !== request.userId));
-      setFriends((prev) => {
-        const exists = prev.some((f) => f.userId === request.userId);
-        if (exists) return prev;
-        return [...prev, request];
-      });
-    };
-
-    connection.on("ReceiveFriendRequest", handleReceiveFriendRequest);
-    connection.on("FriendRequestAccepted", handleFriendRequestAccepted);
-
-    return () => {
-      connection.off("ReceiveFriendRequest", handleReceiveFriendRequest);
-      connection.off("FriendRequestAccepted", handleFriendRequestAccepted);
-    };
+  
   }, [connection, setFriendRequests, setFriends]);
 
   const handleAcceptRequest = async (request) => {
