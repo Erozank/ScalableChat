@@ -15,13 +15,13 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-// App principal
+// Main App component
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const apiServer = import.meta.env.VITE_CHAT_API;
 
-  // Estados globales
+  // Global states
   const [connection, setConnection] = useState();
   const [jwt, setJwt] = useState(() => localStorage.getItem("jwt") || "");
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("jwt"));
@@ -29,14 +29,14 @@ const App = () => {
   const [nickname, setNickname] = useState("");
   const [userId, setUserId] = useState("");
 
-  // Sincroniza JWT y login al cambiar de ruta
+  // Synchronizes JWT and login state when route changes
   useEffect(() => {
     const token = localStorage.getItem("jwt");
     setJwt(token || "");
     setIsLoggedIn(!!token);
   }, [location]);
 
-  // Decodifica JWT para obtener nickname y userId
+  // Decodes JWT to get nickname and userId
   useEffect(() => {
     if (jwt) {
       const payload = parseJwt(jwt);
@@ -48,7 +48,7 @@ const App = () => {
     }
   }, [jwt]);
 
-  // Inicializa conexión SignalR si está logueado
+  // Initializes SignalR connection if user is logged in
   useEffect(() => {
     if (isLoggedIn && !connection) {
       const newConnection = new HubConnectionBuilder()

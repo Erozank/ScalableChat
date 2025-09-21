@@ -27,10 +27,6 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
     );
   }, [setChats]);
 
-
-
-  // No need for global SignalR events here as they are now handled in App.jsx
-
   return (
     <Row className="g-3">
       <Col md={4}>
