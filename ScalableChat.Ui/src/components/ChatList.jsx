@@ -6,7 +6,7 @@ const ChatList = ({ chats, selectedChatId, onSelectChat }) => {
     return (
       <Card>
         <Card.Body>
-          <p className="text-muted mb-0">No tienes chats activos</p>
+          <p className="text-muted mb-0">No active chats</p>
         </Card.Body>
       </Card>
     );
@@ -81,20 +81,22 @@ const ChatList = ({ chats, selectedChatId, onSelectChat }) => {
                 <div className="w-100">
                   <div className="d-flex justify-content-between align-items-center mb-1">
                     <h6 className="mb-0">{chat.name}</h6>
-                    {lastMessage && (
-                      <small className="text-muted">
-                        {formatLastMessageTime(lastMessage.timestamp)}
-                      </small>
-                    )}
+                    <div className="d-flex align-items-center gap-2">
+                      {chat.unreadCount > 0 && (
+                        <Badge bg="primary" pill>
+                          {chat.unreadCount}
+                        </Badge>
+                      )}
+                      {lastMessage && (
+                        <small className="text-muted">
+                          {formatLastMessageTime(lastMessage.timestamp)}
+                        </small>
+                      )}
+                    </div>
                   </div>
                   <p className="mb-0 text-muted small">
                     {getLastMessagePreview(chat.messages)}
                   </p>
-                  {chat.unreadCount > 0 && (
-                    <Badge bg="primary" className="unread-badge mt-1">
-                      {chat.unreadCount}
-                    </Badge>
-                  )}
                 </div>
               </ListGroup.Item>
             );

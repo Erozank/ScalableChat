@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Form, Button } from 'react-bootstrap';
 
-const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
+const Chat = ({ selectedChat, connection, nickname, userId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
@@ -37,11 +37,6 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
             (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
           );
         });
-        
-        // Notify the parent component that there is a new message
-        if (onNewMessage) {
-          onNewMessage(selectedChat?.chatId, message);
-        }
       }
     };
 
@@ -61,7 +56,7 @@ const Chat = ({ selectedChat, connection, onNewMessage, nickname, userId }) => {
       connection.off("ReceiveMessage", handleReceiveMessage);
       connection.off("UpdateMessageId", handleUpdateMessageId);
     };
-  }, [connection, selectedChat?.chatId, onNewMessage]);
+  }, [connection, selectedChat?.chatId]);
 
   const sendMessage = async (e) => {
     e.preventDefault();

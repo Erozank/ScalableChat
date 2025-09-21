@@ -89,7 +89,7 @@ const App = () => {
   };
 
   const handleStartChatFromFriends = async (friend) => {
-    // send a request to start a chat with the selected friend
+    // Send a request to start a chat with the selected friend
     if (!isLoggedIn) return;
 
     try {
@@ -108,9 +108,24 @@ const App = () => {
       console.log('Create chat response:', data);
       const chatId = data.chatId;
       
+      // Create new chat with required structure
+      const newChat = {
+        chatId: chatId,
+        friendId: friend.userId,
+        messages: [],
+        name: friend.nickname,
+        unreadCount: 0
+      };
+
+      // Add the new chat to the chats list
+      setChats(prevChats => [...prevChats, newChat]);
+      
       console.log('Chat started with ID:', chatId);
 
       navigate('/');
+      
+      // Store the chat to select it after navigation
+      window.selectChat = newChat;
       
       setTimeout(() => {
         if (window.handleStartChat) {
@@ -130,6 +145,41 @@ const App = () => {
     chats, setChats
   } = useInitialChatData(isLoggedIn, apiServer, jwt);
 
+  // Global event handlers for friend requests
+  useEffect(() => {
+    if (!connection) return;
+
+    const handleReceiveFriendRequest = (friendData) => {
+      setFriendRequests((prev) => {
+        const exists = prev.some((req) => req.userId === friendData.userId);
+        if (exists) return prev;
+        return [
+          ...prev,
+          { nickname: friendData.nickname, userId: friendData.userId }
+        ];
+      });
+      console.log("Received friend request from: ", friendData.nickname);
+    };
+
+    const handleFriendRequestAccepted = (request) => {
+      console.log("Friend request accepted:", request);
+      setFriendRequests((prev) => prev.filter((r) => r.userId !== request.userId));
+      setFriends((prev) => {
+        const exists = prev.some((f) => f.userId === request.userId);
+        if (exists) return prev;
+        return [...prev, request];
+      });
+    };
+
+    connection.on("ReceiveFriendRequest", handleReceiveFriendRequest);
+    connection.on("FriendRequestAccepted", handleFriendRequestAccepted);
+
+    return () => {
+      connection.off("ReceiveFriendRequest", handleReceiveFriendRequest);
+      connection.off("FriendRequestAccepted", handleFriendRequestAccepted);
+    };
+  }, [connection, setFriendRequests, setFriends]);
+
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
   }, [darkMode]);
@@ -138,7 +188,12 @@ const App = () => {
     <>
       <header>
         <div className="d-flex justify-content-between align-items-center px-4 py-2">
-          {isLoggedIn && <HeaderNav />}
+          {isLoggedIn && (
+            <HeaderNav 
+              pendingRequestsCount={friendRequests.length} 
+              unreadMessagesCount={chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0)}
+            />
+          )}
           <DarkModeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
           {isLoggedIn && (
             <div className="ms-3">
@@ -177,6 +232,7 @@ const App = () => {
                       userId={userId}
                       chats={chats}
                       setChats={setChats}
+                      onChatCreated={(chat) => window.selectChat = chat}
                     />
                   )
                 }

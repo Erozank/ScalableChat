@@ -7,7 +7,13 @@ import '../styles/chat.css';
 const Chats = ({ connection, nickname, userId, chats, setChats }) => {
   const [selectedChat, setSelectedChat] = useState(null);
 
-
+  // Handle selection of newly created chat
+  useEffect(() => {
+    if (window.selectChat) {
+      setSelectedChat(window.selectChat);
+      window.selectChat = null;
+    }
+  }, [chats]);
 
   // Function to handle selecting an existing chat
   const handleSelectChat = useCallback((chat) => {
@@ -16,41 +22,56 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
     // Mark as read
     setChats(prevChats =>
       prevChats.map(c =>
-        c.id === chat.id ? { ...c, unreadCount: 0 } : c
+        c.chatId === chat.chatId ? { ...c, unreadCount: 0 } : c
       )
     );
   }, [setChats]);
 
-  // Function to handle new messages
-  const handleNewMessage = useCallback((chatId, message) => {
-    setChats(prevChats =>
-      prevChats.map(chat => {
-        if (chat.id === chatId) {
-          const updatedMessages = [...chat.messages];
-          const messageExists = updatedMessages.some(m => m.id === message.id);
-          if (!messageExists) {
-            updatedMessages.push(message);
-            updatedMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-          }
-          return {
-            ...chat,
-            messages: updatedMessages,
-            unreadCount: selectedChat?.id === chatId ? 0 : chat.unreadCount + 1
-          };
-        }
-        return chat;
-      })
-    );
-  }, [selectedChat, setChats]);
 
-  // ...existing code...
 
   // Listen to global SignalR events for all chats
   useEffect(() => {
     if (!connection) return;
 
     const handleReceiveMessage = (message) => {
-      handleNewMessage(message.chatId, message);
+      console.log('Received message:', message);
+      
+      setChats(prevChats => {
+        // Check if chat exists
+        const existingChat = prevChats.find(chat => chat.chatId === message.chatId);
+        
+        if (!existingChat) {
+          // Create new chat if it doesn't exist
+          const newChat = {
+            chatId: message.chatId,
+            name: message.senderNickname || 'No name',
+            friendId: message.senderId,
+            messages: [message],
+            unreadCount: 1
+          };
+          return [...prevChats, newChat];
+        }
+
+        // Update existing chat
+        return prevChats.map(chat => {
+          if (chat.chatId === message.chatId) {
+            const messages = [...(chat.messages || [])];
+            const messageExists = messages.some(m => m.id === message.id);
+            
+            if (!messageExists) {
+              messages.push(message);
+              messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            }
+
+            return {
+              ...chat,
+              messages,
+              unreadCount: selectedChat?.chatId === message.chatId ? 0 : (chat.unreadCount || 0) + 1
+            };
+          }
+          return chat;
+        });
+      });
     };
 
     connection.on("ReceiveMessage", handleReceiveMessage);
@@ -58,7 +79,7 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
     return () => {
       connection.off("ReceiveMessage", handleReceiveMessage);
     };
-  }, [connection, handleNewMessage]);
+  }, [connection, selectedChat, setChats]);
 
   return (
     <Row className="g-3">
@@ -73,7 +94,6 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
         <Chat
           selectedChat={selectedChat}
           connection={connection}
-          onNewMessage={handleNewMessage}
           nickname={nickname}
           userId={userId}
         />
