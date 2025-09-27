@@ -173,11 +173,9 @@ const App = () => {
 
     const handleReceiveMessage = (message) => {
       console.log('Received message:', message);
-      
       setChats(prevChats => {
         // Check if chat exists
         const existingChat = prevChats.find(chat => chat.chatId === message.chatId);
-        
         if (!existingChat) {
           // Create new chat if it doesn't exist
           const newChat = {
@@ -189,23 +187,19 @@ const App = () => {
           };
           return [...prevChats, newChat];
         }
-
         // Update existing chat
         return prevChats.map(chat => {
           if (chat.chatId === message.chatId) {
             const messages = [...(chat.messages || [])];
             const messageExists = messages.some(m => m.id === message.id);
-            
             if (!messageExists) {
               messages.push(message);
               messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             }
-
             // Only increment unreadCount if we're not in the chat view or the chat isn't selected
             const isInChatView = location.pathname === '/';
             const isChatSelected = window.selectChat?.chatId === message.chatId;
             const shouldIncrementUnread = !isInChatView || !isChatSelected;
-
             return {
               ...chat,
               messages,
@@ -217,16 +211,32 @@ const App = () => {
       });
     };
 
+    // Listen for FriendDeleted event
+    const handleFriendDeleted = (id) => {
+      setFriends((prev) => prev.filter((f) => f.userId !== id));
+      setChats((prev) => {
+        // Search for the nickname of the deleted friend
+        const friend = friends.find(f => f.userId === id);
+        if (friend) {
+          return prev.filter(chat => chat.name !== friend.nickname);
+        }
+        return prev;
+      });
+      console.log('Friend deleted:', id);
+    };
+
     connection.on("ReceiveFriendRequest", handleReceiveFriendRequest);
     connection.on("FriendRequestAccepted", handleFriendRequestAccepted);
     connection.on("ReceiveMessage", handleReceiveMessage);
+    connection.on("FriendDeleted", handleFriendDeleted);
 
     return () => {
       connection.off("ReceiveFriendRequest", handleReceiveFriendRequest);
       connection.off("FriendRequestAccepted", handleFriendRequestAccepted);
       connection.off("ReceiveMessage", handleReceiveMessage);
+      connection.off("FriendDeleted", handleFriendDeleted);
     };
-  }, [connection, setFriendRequests, setFriends, setChats, location.pathname]);
+  }, [connection, setFriendRequests, setFriends, setChats, location.pathname, friends]);
 
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
@@ -306,6 +316,7 @@ const App = () => {
                       setFriends={setFriends}
                       friendRequests={friendRequests}
                       setFriendRequests={setFriendRequests}
+                      setChats={setChats}
                     />
                   )
                 }

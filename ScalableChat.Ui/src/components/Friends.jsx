@@ -12,8 +12,36 @@ function Friends({
   friends,
   setFriends,
   friendRequests,
-  setFriendRequests
+  setFriendRequests,
+  setChats,
+  onDeleteFriendSignalR
 }) {
+  // Delete friend and associated chat
+  const handleDeleteFriend = async (friend) => {
+    if (!connection) return;
+    try {
+      // Call SignalR method
+      await connection.invoke("DeleteFriend", friend.userId);
+    } catch (error) {
+      console.error("Error deleting friend:", error);
+    }
+    // Remove friend from the list
+    setFriends((prev) => prev.filter((f) => f.userId !== friend.userId));
+    // Remove associated chat
+    setChats((prev) => prev.filter((chat) => chat.name !== friend.nickname));
+  };
+
+  // Delete friend and chat by SignalR event
+  useEffect(() => {
+    if (!onDeleteFriendSignalR) return;
+    onDeleteFriendSignalR((id) => {
+      setFriends((prev) => prev.filter((f) => f.userId !== id));
+      setChats((prev) => prev.filter((chat) => {
+        const friend = friends.find(f => f.userId === id);
+        return friend ? chat.name !== friend.nickname : true;
+      }));
+    });
+  }, [onDeleteFriendSignalR, setFriends, setChats, friends]);
 
   useEffect(() => {
 
@@ -46,7 +74,7 @@ function Friends({
         onAccept={handleAcceptRequest}
         onReject={handleRejectRequest}
       />
-      <FriendList friends={friends} onStartChat={onStartChat} />
+      <FriendList friends={friends} onStartChat={onStartChat} onDeleteFriend={handleDeleteFriend} />
     </div>
   );
 }

@@ -67,6 +67,25 @@ namespace ScalableChat.Api.Hubs
             }
         }
 
+        public async Task DeleteChat(Guid chatId)
+        {
+            var userId = Guid.Parse(Context.UserIdentifier!);
+            var friendId = await chatRepository.DeleteChatByChatId(chatId, userId);
+
+            await Clients.User(friendId.ToString()!).SendAsync("ChatDeleted", chatId);
+        }
+
+        public async Task DeleteFriend(Guid userId)
+        {
+            var recipientUserId = Guid.Parse(Context.UserIdentifier!);
+            var deleteFriendTask = friendsRepository.DeleteFriend(userId, recipientUserId);
+            var deleteChatTask = chatRepository.DeleteChatByUserIds(userId, recipientUserId);
+
+            var fiendDeletedTask = Clients.User(userId.ToString()!).SendAsync("FriendDeleted", recipientUserId);
+
+            await Task.WhenAll(deleteFriendTask, deleteChatTask, fiendDeletedTask);
+        }
+
         public async Task RejectFriendrequest(Guid userId)
         {
             var recipientUserId = Guid.Parse(Context.UserIdentifier!);
@@ -81,8 +100,11 @@ namespace ScalableChat.Api.Hubs
         {
             var userId = Guid.Parse(Context.UserIdentifier!);
             var message = await chatRepository.SendMessage(userId, friendId, chatId, content);
-            await Clients.User(friendId.ToString()!).SendAsync("ReceiveMessage", message);
-            await Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
+
+            var receiveMessageTask = Clients.User(friendId.ToString()!).SendAsync("ReceiveMessage", message);
+            var updateMessageTask = Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
+
+            await Task.WhenAll(receiveMessageTask, updateMessageTask);
         }
     }
 }

@@ -142,5 +142,38 @@ namespace ScalableChat.Api.Repositories
 
             return userPreviews;
         }
+
+        // Delete friend (both directions) and set any existing friend requests to Rejected
+        public async Task DeleteFriend(Guid userId, Guid friendId)
+        {
+            var now = DateTimeOffset.UtcNow;
+
+            var batch = new BatchStatement()
+                .Add(new SimpleStatement(@"
+                    UPDATE scalable_chat.friend_requests
+                    SET status = ?, responded_at = ?
+                    WHERE from_user_id = ? AND to_user_id = ?",
+                    1, now, userId, friendId
+                ))
+                .Add(new SimpleStatement(@"
+                    UPDATE scalable_chat.friend_requests
+                    SET status = ?, responded_at = ?
+                    WHERE from_user_id = ? AND to_user_id = ?",
+                    1, now, friendId, userId
+                ))
+                .Add(new SimpleStatement(@"
+                    DELETE FROM scalable_chat.user_friends
+                    WHERE user_id = ? and friend_id = ?",
+                    userId, friendId
+                ))
+                .Add(new SimpleStatement(@"
+                    DELETE FROM scalable_chat.user_friends
+                    WHERE user_id = ? and friend_id = ?",
+                    friendId, userId
+                ));
+
+
+            await _session.ExecuteAsync(batch);
+        }
     }
 }
