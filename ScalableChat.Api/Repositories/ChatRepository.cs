@@ -1,5 +1,6 @@
 ﻿using Cassandra;
 using ScalableChat.Api.Models;
+using System.Linq;
 
 namespace ScalableChat.Api.Repositories
 {
@@ -166,6 +167,73 @@ namespace ScalableChat.Api.Repositories
                 ChatId = chatId,
                 CreatedAt = now
             };
+        }
+
+        public async Task DeleteChatByUserIds(Guid userA, Guid userB)
+        {
+            if (userA.CompareTo(userB) > 0)
+            {
+                (userA, userB) = (userB, userA);
+            }
+
+            var chatId = await GetDirectChatAsync(userA, userB);
+            if (!chatId.HasValue)
+            {
+                return; // Chat doesn't exist
+            }
+
+            var batch = new BatchStatement();
+            batch.Add(new SimpleStatement("""
+                DELETE FROM scalable_chat.direct_chats WHERE user_a = ? AND user_b = ?
+                """, userA, userB));
+            batch.Add(new SimpleStatement("""
+                DELETE FROM scalable_chat.direct_chats WHERE user_a = ? AND user_b = ?
+                """, userB, userA));
+            batch.Add(new SimpleStatement("""
+                DELETE FROM scalable_chat.direct_chats_by_chat_id WHERE chat_id = ?
+                """, chatId));
+            batch.Add(new SimpleStatement("""
+                DELETE FROM scalable_chat.user_chats WHERE user_id = ? AND chat_id = ?
+                """, userA, chatId));
+            batch.Add(new SimpleStatement("""
+                DELETE FROM scalable_chat.user_chats WHERE user_id = ? AND chat_id = ?
+                """, userB, chatId));
+            batch.Add(new SimpleStatement("""
+                DELETE FROM scalable_chat.messages WHERE chat_id = ?
+                """, chatId));
+
+            await _session.ExecuteAsync(batch);
+        }
+
+        public async Task<Guid> DeleteChatByChatId(Guid chatId, Guid userId)
+        {
+            var usersIdsInChat = await GetUserIdsInChat(chatId);
+
+            // Check if the user is part of the chat
+            if (usersIdsInChat.Any(id => id == userId))
+            {
+                var friendId = usersIdsInChat.First(id => id != userId);
+                await DeleteChatByUserIds(userId, friendId);
+                return friendId;
+            }
+
+            return Guid.Empty; // User is not part of the chat
+        }
+
+        private async Task<IEnumerable<Guid>> GetUserIdsInChat(Guid chatId)
+        {
+            var stmt = await _session.PrepareAsync("""
+            SELECT user_a, user_b FROM scalable_chat.direct_chats_by_chat_id
+            WHERE chat_id = ?
+            """);
+            var bound = stmt.Bind(chatId);
+            var resultSet = await _session.ExecuteAsync(bound);
+            var row = resultSet.FirstOrDefault();
+            if (row == null)
+            {
+                return Enumerable.Empty<Guid>(); // Chat not found
+            }
+            return new[] { row.GetValue<Guid>("user_a"), row.GetValue<Guid>("user_b") };
         }
 
     }

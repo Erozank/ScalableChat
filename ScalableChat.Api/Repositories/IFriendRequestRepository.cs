@@ -12,5 +12,6 @@ namespace ScalableChat.Api.Repositories
         Task<IEnumerable<UserPreview>> GetReceivedFriendRequests(Guid userId);
         Task InsertFriendRequest(Guid userId, Guid friendId);
         Task UpdateFriendshipStatus(Guid userId, Guid friendId, FriendshipStatus status);
+        Task DeleteFriend(Guid userId, Guid friendId);
     }
 }

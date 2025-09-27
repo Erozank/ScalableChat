@@ -6,6 +6,25 @@ import '../styles/chat.css';
 
 const Chats = ({ connection, nickname, userId, chats, setChats }) => {
   const [selectedChat, setSelectedChat] = useState(null);
+  // Handler to delete chat locally
+  const handleDeleteChat = useCallback((chatId) => {
+    setChats(prevChats => prevChats.filter(c => c.chatId !== chatId));
+    if (selectedChat && selectedChat.chatId === chatId) {
+      setSelectedChat(null);
+    }
+  }, [setChats, selectedChat]);
+
+  // Listen for 'ChatDeleted' event from SignalR
+  useEffect(() => {
+    if (!connection) return;
+    const handleChatDeleted = (chatId) => {
+      handleDeleteChat(chatId);
+    };
+    connection.on("ChatDeleted", handleChatDeleted);
+    return () => {
+      connection.off("ChatDeleted", handleChatDeleted);
+    };
+  }, [connection, handleDeleteChat]);
 
   // Handle selection of newly created chat
   useEffect(() => {
@@ -34,6 +53,8 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
           chats={chats} 
           selectedChatId={selectedChat?.chatId} 
           onSelectChat={handleSelectChat} 
+          onDeleteChat={handleDeleteChat}
+          connection={connection}
         />
       </Col>
       <Col md={8}>

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Card, ListGroup, Badge } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Card, ListGroup, Badge, Dropdown, Button } from 'react-bootstrap';
 
-const ChatList = ({ chats, selectedChatId, onSelectChat }) => {
+const ChatList = ({ chats, selectedChatId, onSelectChat, onDeleteChat, connection }) => {
+  const [menuOpenId, setMenuOpenId] = useState(null);
   if (!chats || !chats.length) {
     return (
       <Card>
@@ -53,7 +54,6 @@ const ChatList = ({ chats, selectedChatId, onSelectChat }) => {
     const bLastMessage = b.messages && b.messages.length > 0 
       ? new Date(b.messages[b.messages.length - 1].timestamp) 
       : new Date(0);
-    
     return bLastMessage - aLastMessage;
   });
 
@@ -69,16 +69,15 @@ const ChatList = ({ chats, selectedChatId, onSelectChat }) => {
             const lastMessage = chat.messages && chat.messages.length > 0 
               ? chat.messages[chat.messages.length - 1] 
               : null;
-            
             return (
               <ListGroup.Item
                 key={chat.chatId}
                 action
                 active={isSelected}
-                onClick={() => onSelectChat(chat)}
                 className={`chat-list-item d-flex justify-content-between align-items-start ${isSelected ? 'active' : ''}`}
+                style={{ position: 'relative' }}
               >
-                <div className="w-100">
+                <div className="w-100" onClick={() => onSelectChat(chat)} style={{ cursor: 'pointer' }}>
                   <div className="d-flex justify-content-between align-items-center mb-1">
                     <h6 className="mb-0">{chat.name}</h6>
                     <div className="d-flex align-items-center gap-2">
@@ -92,6 +91,41 @@ const ChatList = ({ chats, selectedChatId, onSelectChat }) => {
                           {formatLastMessageTime(lastMessage.timestamp)}
                         </small>
                       )}
+                      {/* Three dots menu */}
+                      <Dropdown show={menuOpenId === chat.chatId} onToggle={(isOpen) => setMenuOpenId(isOpen ? chat.chatId : null)} align="end">
+                        <Dropdown.Toggle
+                          as={Button}
+                          variant="link"
+                          size="sm"
+                          style={{ padding: 0, marginLeft: 8, color: '#888', boxShadow: 'none' }}
+                          onClick={e => { e.stopPropagation(); setMenuOpenId(chat.chatId); }}
+                          tabIndex={0}
+                        >
+                          <span style={{ fontSize: '1.5em', lineHeight: 1 }}>⋮</span>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu onClick={e => e.stopPropagation()}>
+                          <Dropdown.Item
+                            onClick={async () => {
+                              setMenuOpenId(null);
+                              const confirmed = window.confirm(`Are you sure you want to delete the chat with "${chat.name}"?`);
+                              if (confirmed) {
+                                try {
+                                  if (connection) {
+                                    await connection.invoke("DeleteChat", chat.chatId);
+                                  }
+                                  if (onDeleteChat) {
+                                    onDeleteChat(chat.chatId);
+                                  }
+                                } catch (err) {
+                                  alert("Error deleting chat: " + err.message);
+                                }
+                              }
+                            }}
+                          >
+                            Delete chat
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
                     </div>
                   </div>
                   <p className="mb-0 text-muted small">
