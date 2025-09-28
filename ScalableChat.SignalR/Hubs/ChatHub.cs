@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using ScalableChat.Api.Enums;
-using ScalableChat.Api.Models;
-using ScalableChat.Api.Repositories;
+using ScalableChat.Common.Enums;
+using ScalableChat.Common.Models;
+using ScalableChat.Common.Repositories;
 
-namespace ScalableChat.Api.Hubs
+namespace ScalableChat.SignalR.Hubs
 {
     public class ChatHub(IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
     {

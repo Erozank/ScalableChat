@@ -1,8 +1,8 @@
 ﻿using Cassandra;
-using ScalableChat.Api.Enums;
-using ScalableChat.Api.Models;
+using ScalableChat.Common.Enums;
+using ScalableChat.Common.Models;
 
-namespace ScalableChat.Api.Repositories
+namespace ScalableChat.Common.Repositories
 {
     public class FriendRequestRepository(Cassandra.ISession session, IUserRepository userRepository) : IFriendRequestRepository
     {

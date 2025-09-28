@@ -1,8 +1,7 @@
 ﻿using Cassandra;
-using ScalableChat.Api.Models;
-using System.Linq;
+using ScalableChat.Common.Models;
 
-namespace ScalableChat.Api.Repositories
+namespace ScalableChat.Common.Repositories
 {
     public class ChatRepository : IChatRepository
     {
@@ -112,7 +111,7 @@ namespace ScalableChat.Api.Repositories
             {
                 ChatId = chatId,
                 Friend = friend,
-                Messages = messages.ToList(),
+                Messages = [.. messages],
             };
             return chatInfo;
         }
@@ -231,9 +230,9 @@ namespace ScalableChat.Api.Repositories
             var row = resultSet.FirstOrDefault();
             if (row == null)
             {
-                return Enumerable.Empty<Guid>(); // Chat not found
+                return []; // Chat not found
             }
-            return new[] { row.GetValue<Guid>("user_a"), row.GetValue<Guid>("user_b") };
+            return [row.GetValue<Guid>("user_a"), row.GetValue<Guid>("user_b")];
         }
 
     }

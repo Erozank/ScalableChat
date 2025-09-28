@@ -1,4 +1,4 @@
-﻿namespace ScalableChat.Api.Infrastucture
+﻿namespace ScalableChat.Common.Infrastucture
 {
     public interface IPasswordHasher
     {

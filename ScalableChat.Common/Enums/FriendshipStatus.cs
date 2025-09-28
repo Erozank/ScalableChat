@@ -1,4 +1,4 @@
-﻿namespace ScalableChat.Api.Enums
+﻿namespace ScalableChat.Common.Enums
 {
     public enum FriendshipStatus
     {

@@ -20,6 +20,7 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const apiServer = import.meta.env.VITE_CHAT_API;
+  const signalRServer = import.meta.env.VITE_SIGNALR_API;
 
   // Global states
   const [connection, setConnection] = useState();
@@ -52,7 +53,7 @@ const App = () => {
   useEffect(() => {
     if (isLoggedIn && !connection) {
       const newConnection = new HubConnectionBuilder()
-        .withUrl(`${apiServer}/chat`, {
+        .withUrl(`${signalRServer}/chat`, {
           accessTokenFactory: () => jwt,
         })
         .withAutomaticReconnect()
@@ -66,7 +67,7 @@ const App = () => {
         })
         .catch((err) => console.log("SignalR Connection Error: ", err));
     }
-  }, [isLoggedIn, connection, apiServer, jwt]);
+  }, [isLoggedIn, connection, apiServer, signalRServer, jwt]);
 
   const sendFriendRequest = async (friendName) => {
     if (!connection) return;

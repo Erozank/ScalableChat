@@ -8,6 +8,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.ServiceDefault
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.Api", "ScalableChat.Api\ScalableChat.Api.csproj", "{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.Common", "ScalableChat.Common\ScalableChat.Common.csproj", "{E6CC70FB-7F53-42D2-9DFC-2C9AEAC595F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScalableChat.SignalR", "ScalableChat.SignalR\ScalableChat.SignalR.csproj", "{4DF9BF7E-F679-4261-79A4-99ECB2DB06EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +30,14 @@ Global
 		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{806F7E9E-A0C9-5D4F-E0F3-F19A1DCE9A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6CC70FB-7F53-42D2-9DFC-2C9AEAC595F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6CC70FB-7F53-42D2-9DFC-2C9AEAC595F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6CC70FB-7F53-42D2-9DFC-2C9AEAC595F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6CC70FB-7F53-42D2-9DFC-2C9AEAC595F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DF9BF7E-F679-4261-79A4-99ECB2DB06EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DF9BF7E-F679-4261-79A4-99ECB2DB06EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DF9BF7E-F679-4261-79A4-99ECB2DB06EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DF9BF7E-F679-4261-79A4-99ECB2DB06EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
