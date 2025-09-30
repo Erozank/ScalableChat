@@ -260,6 +260,7 @@ const App = () => {
                 setIsLoggedIn={setIsLoggedIn}
                 setConnection={setConnection}
                 setJwt={setJwt}
+                connection={connection}
               />
             </div>
           )}

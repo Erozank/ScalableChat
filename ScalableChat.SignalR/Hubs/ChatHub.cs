@@ -2,14 +2,38 @@
 using ScalableChat.Common.Enums;
 using ScalableChat.Common.Models;
 using ScalableChat.Common.Repositories;
+using StackExchange.Redis;
 
 namespace ScalableChat.SignalR.Hubs
 {
-    public class ChatHub(IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
+    public class ChatHub(IConnectionMultiplexer redis, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
     {
+        private readonly IConnectionMultiplexer redis = redis;
         private readonly IUserRepository userRepository = userRepository;
         private readonly IFriendRequestRepository friendsRepository = friendsRepository;
         private readonly IChatRepository chatRepository = chatRepository;
+
+        public override async Task OnConnectedAsync()
+        {
+            var userId = Context.UserIdentifier;
+            if (userId != null)
+            {
+                var db = redis.GetDatabase();
+                await db.StringSetAsync($"user:{userId}:connected", true, TimeSpan.FromMinutes(1));
+            }
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var userId = Context.UserIdentifier;
+            if (userId != null)
+            {
+                var db = redis.GetDatabase();
+                await db.KeyDeleteAsync($"user:{userId}:connected");
+            }
+            await base.OnDisconnectedAsync(exception);
+        }
 
         public async Task<bool> SendFriendRequest(string nickname)
         {
