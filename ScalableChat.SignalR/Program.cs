@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using ScalableChat.Common.Infrastucture;
 using ScalableChat.Common.Repositories;
 using ScalableChat.SignalR.Hubs;
+using ScalableChat.SignalR.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -82,6 +83,7 @@ builder.Services.AddSingleton<Cassandra.ISession>(sp => {
         throw;
     }
 });
+builder.Services.AddSingleton<IPresenceService, PresenceService>();
 
 var app = builder.Build();
 

@@ -2,13 +2,13 @@
 using ScalableChat.Common.Enums;
 using ScalableChat.Common.Models;
 using ScalableChat.Common.Repositories;
-using StackExchange.Redis;
+using ScalableChat.SignalR.Services;
 
 namespace ScalableChat.SignalR.Hubs
 {
-    public class ChatHub(IConnectionMultiplexer redis, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
+    public class ChatHub(IPresenceService presenceService, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
     {
-        private readonly IConnectionMultiplexer redis = redis;
+        private readonly IPresenceService presenceService = presenceService;
         private readonly IUserRepository userRepository = userRepository;
         private readonly IFriendRequestRepository friendsRepository = friendsRepository;
         private readonly IChatRepository chatRepository = chatRepository;
@@ -16,22 +16,14 @@ namespace ScalableChat.SignalR.Hubs
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier;
-            if (userId != null)
-            {
-                var db = redis.GetDatabase();
-                await db.StringSetAsync($"user:{userId}:connected", true, TimeSpan.FromMinutes(1));
-            }
+            await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.UserIdentifier;
-            if (userId != null)
-            {
-                var db = redis.GetDatabase();
-                await db.KeyDeleteAsync($"user:{userId}:connected");
-            }
+            await presenceService.RemovePresenceAsync(userId!);
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -129,6 +121,12 @@ namespace ScalableChat.SignalR.Hubs
             var updateMessageTask = Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
 
             await Task.WhenAll(receiveMessageTask, updateMessageTask);
+        }
+
+        public async Task HeartBeat()
+        {
+            var userId = Context.UserIdentifier;
+            await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
         }
     }
 }
