@@ -64,6 +64,19 @@ const App = () => {
         .then(() => {
           setConnection(newConnection);
           console.log("SignalR Connected");
+
+          // Set up heartbeat interval
+          const heartbeatInterval = setInterval(async () => {
+            try {
+              await newConnection.invoke("Heartbeat");
+              console.log("Heartbeat sent");
+            } catch (error) {
+              console.error("Error sending heartbeat:", error);
+            }
+          }, 30000); // 30 seconds
+
+          // Clean up interval when component unmounts or connection changes
+          return () => clearInterval(heartbeatInterval);
         })
         .catch((err) => console.log("SignalR Connection Error: ", err));
     }
