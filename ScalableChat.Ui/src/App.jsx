@@ -20,6 +20,7 @@ const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const apiServer = import.meta.env.VITE_CHAT_API;
+  const signalRServer = import.meta.env.VITE_SIGNALR_API;
 
   // Global states
   const [connection, setConnection] = useState();
@@ -52,7 +53,7 @@ const App = () => {
   useEffect(() => {
     if (isLoggedIn && !connection) {
       const newConnection = new HubConnectionBuilder()
-        .withUrl(`${apiServer}/chat`, {
+        .withUrl(`${signalRServer}/chat`, {
           accessTokenFactory: () => jwt,
         })
         .withAutomaticReconnect()
@@ -63,10 +64,23 @@ const App = () => {
         .then(() => {
           setConnection(newConnection);
           console.log("SignalR Connected");
+
+          // Set up heartbeat interval
+          const heartbeatInterval = setInterval(async () => {
+            try {
+              await newConnection.invoke("Heartbeat");
+              console.log("Heartbeat sent");
+            } catch (error) {
+              console.error("Error sending heartbeat:", error);
+            }
+          }, 30000); // 30 seconds
+
+          // Clean up interval when component unmounts or connection changes
+          return () => clearInterval(heartbeatInterval);
         })
         .catch((err) => console.log("SignalR Connection Error: ", err));
     }
-  }, [isLoggedIn, connection, apiServer, jwt]);
+  }, [isLoggedIn, connection, apiServer, signalRServer, jwt]);
 
   const sendFriendRequest = async (friendName) => {
     if (!connection) return;
@@ -259,6 +273,7 @@ const App = () => {
                 setIsLoggedIn={setIsLoggedIn}
                 setConnection={setConnection}
                 setJwt={setJwt}
+                connection={connection}
               />
             </div>
           )}

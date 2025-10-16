@@ -1,21 +1,23 @@
 using Cassandra;
-using ScalableChat.Api.Extensions;
-using ScalableChat.Common.Infrastucture;
-using ScalableChat.Common.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ScalableChat.Common.Infrastucture;
+using ScalableChat.Common.Repositories;
+using ScalableChat.SignalR.Hubs;
+using ScalableChat.SignalR.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGenWithAuth();
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
 
 builder.Services.AddSignalR();
+
+builder.AddRedisClient(connectionName: "cache");
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -72,15 +74,16 @@ builder.Services.AddSingleton<Cassandra.ISession>(sp => {
     var cluster = sp.GetRequiredService<ICluster>();
     try
     {
-        return cluster.Connect(); 
+        return cluster.Connect();
     }
     catch (Exception ex)
     {
-        var logger = sp.GetRequiredService<ILogger<Program>>(); 
+        var logger = sp.GetRequiredService<ILogger<Program>>();
         logger.LogCritical(ex, "Failed to connect to ScyllaDB Keyspace scalable_chat");
         throw;
     }
 });
+builder.Services.AddSingleton<IPresenceService, PresenceService>();
 
 var app = builder.Build();
 
@@ -89,8 +92,7 @@ app.MapDefaultEndpoints();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
@@ -99,8 +101,10 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapControllers();
-
 app.UseCors("CorsPolicy");
 
+app.MapHub<ChatHub>("/chat");
+
 app.Run();
+
+

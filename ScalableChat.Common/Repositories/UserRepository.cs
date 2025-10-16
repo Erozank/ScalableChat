@@ -1,8 +1,8 @@
 ﻿using Cassandra;
-using ScalableChat.Api.Entities;
-using ScalableChat.Api.Models;
+using ScalableChat.Common.Entities;
+using ScalableChat.Common.Models;
 
-namespace ScalableChat.Api.Repositories
+namespace ScalableChat.Common.Repositories
 {
     public class UserRepository : IUserRepository
     {

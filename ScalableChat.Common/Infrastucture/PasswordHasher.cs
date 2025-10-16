@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace ScalableChat.Api.Infrastucture
+namespace ScalableChat.Common.Infrastucture
 {
     public class PasswordHasher : IPasswordHasher
     {

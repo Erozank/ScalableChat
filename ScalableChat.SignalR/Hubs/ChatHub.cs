@@ -1,15 +1,31 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using ScalableChat.Api.Enums;
-using ScalableChat.Api.Models;
-using ScalableChat.Api.Repositories;
+using ScalableChat.Common.Enums;
+using ScalableChat.Common.Models;
+using ScalableChat.Common.Repositories;
+using ScalableChat.SignalR.Services;
 
-namespace ScalableChat.Api.Hubs
+namespace ScalableChat.SignalR.Hubs
 {
-    public class ChatHub(IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
+    public class ChatHub(IPresenceService presenceService, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
     {
+        private readonly IPresenceService presenceService = presenceService;
         private readonly IUserRepository userRepository = userRepository;
         private readonly IFriendRequestRepository friendsRepository = friendsRepository;
         private readonly IChatRepository chatRepository = chatRepository;
+
+        public override async Task OnConnectedAsync()
+        {
+            var userId = Context.UserIdentifier;
+            await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var userId = Context.UserIdentifier;
+            await presenceService.RemovePresenceAsync(userId!);
+            await base.OnDisconnectedAsync(exception);
+        }
 
         public async Task<bool> SendFriendRequest(string nickname)
         {
@@ -105,6 +121,12 @@ namespace ScalableChat.Api.Hubs
             var updateMessageTask = Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
 
             await Task.WhenAll(receiveMessageTask, updateMessageTask);
+        }
+
+        public async Task HeartBeat()
+        {
+            var userId = Context.UserIdentifier;
+            await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
         }
     }
 }

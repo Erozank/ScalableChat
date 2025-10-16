@@ -12,13 +12,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arshid.Aspire.ApiDocs.Extensions" Version="9.3.0.1" />
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
-    <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.3.1" />
+    <PackageReference Include="Arshid.Aspire.ApiDocs.Extensions" Version="9.5.0.1" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.0" />
+    <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.0" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="9.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ScalableChat.Api\ScalableChat.Api.csproj" />
+    <ProjectReference Include="..\ScalableChat.SignalR\ScalableChat.SignalR.csproj" />
   </ItemGroup>
 
 </Project>

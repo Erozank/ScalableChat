@@ -9,6 +9,7 @@ export default defineConfig({
     host: true
   },
   define: {
-    'import.meta.env.VITE_CHAT_API': JSON.stringify(process.env['services__chat-api__https__0'])
+    'import.meta.env.VITE_CHAT_API': JSON.stringify(process.env['services__chat-api__https__0']),
+    'import.meta.env.VITE_SIGNALR_API': JSON.stringify(process.env['services__chat-signalr__https__0'])
   },
 })

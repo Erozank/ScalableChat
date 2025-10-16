@@ -1,4 +1,4 @@
-﻿namespace ScalableChat.Api.Entities
+﻿namespace ScalableChat.Common.Entities
 {
     public class UserEntity
     {

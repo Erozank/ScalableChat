@@ -1,7 +1,7 @@
-﻿using ScalableChat.Api.Entities;
-using ScalableChat.Api.Infrastucture;
-using ScalableChat.Api.Models;
-using ScalableChat.Api.Repositories;
+﻿using ScalableChat.Common.Entities;
+using ScalableChat.Common.Infrastucture;
+using ScalableChat.Common.Models;
+using ScalableChat.Common.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ScalableChat.Api.Controllers

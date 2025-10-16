@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ScalableChat.Api.Repositories;
+using ScalableChat.Common.Repositories;
 using System.Security.Claims;
 
 namespace ScalableChat.Api.Controllers

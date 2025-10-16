@@ -1,6 +1,6 @@
 ﻿using Cassandra;
 
-namespace ScalableChat.Api.Models
+namespace ScalableChat.Common.Models
 {
     public class Message
     {

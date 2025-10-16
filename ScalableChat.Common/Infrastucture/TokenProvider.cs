@@ -1,10 +1,11 @@
-﻿using ScalableChat.Api.Entities;
+﻿using ScalableChat.Common.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
-namespace ScalableChat.Api.Infrastucture
+namespace ScalableChat.Common.Infrastucture
 {
     public sealed class TokenProvider(IConfiguration configuration)
     {
