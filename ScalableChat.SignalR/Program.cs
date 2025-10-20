@@ -1,4 +1,5 @@
 using Cassandra;
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ScalableChat.Common.Infrastucture;
@@ -18,6 +19,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 
 builder.AddRedisClient(connectionName: "cache");
+
+builder.AddKafkaProducer<string, string>("kafka");
+builder.AddKafkaConsumer<string, string>("kafka", options =>
+{
+    options.Config.GroupId = "consumer-group";
+    options.Config.AutoOffsetReset = AutoOffsetReset.Earliest;
+});
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -84,6 +92,8 @@ builder.Services.AddSingleton<Cassandra.ISession>(sp => {
     }
 });
 builder.Services.AddSingleton<IPresenceService, PresenceService>();
+
+builder.Services.AddHostedService<KafkaConsumerService>();
 
 var app = builder.Build();
 
