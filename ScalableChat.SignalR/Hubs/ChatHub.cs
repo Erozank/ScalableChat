@@ -1,18 +1,17 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Confluent.Kafka;
+using Microsoft.AspNetCore.SignalR;
 using ScalableChat.Common.Enums;
 using ScalableChat.Common.Models;
 using ScalableChat.Common.Repositories;
+using ScalableChat.SignalR.Models;
 using ScalableChat.SignalR.Services;
+using System.Text.Json;
 
 namespace ScalableChat.SignalR.Hubs
 {
-    public class ChatHub(IPresenceService presenceService, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository) : Hub
+    public class ChatHub(IPresenceService presenceService, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository,
+        IProducer<string, string> producer) : Hub
     {
-        private readonly IPresenceService presenceService = presenceService;
-        private readonly IUserRepository userRepository = userRepository;
-        private readonly IFriendRequestRepository friendsRepository = friendsRepository;
-        private readonly IChatRepository chatRepository = chatRepository;
-
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier;
@@ -117,10 +116,23 @@ namespace ScalableChat.SignalR.Hubs
             var userId = Guid.Parse(Context.UserIdentifier!);
             var message = await chatRepository.SendMessage(userId, friendId, chatId, content);
 
-            var receiveMessageTask = Clients.User(friendId.ToString()!).SendAsync("ReceiveMessage", message);
+            var targetServerId = await presenceService.GetUserPresenceAsync(friendId.ToString()!);
+            var topic = $"delivery_to_server.{targetServerId}";
+
+            var messageValue = new KafkaMessage<Message>
+            {
+                Receiver = friendId.ToString()!,
+                Payload = message
+            };
+            var karfkaSendMessageTask = producer.ProduceAsync(topic, new Message<string, string>
+            {
+                Key = message.Id.ToString(),
+                Value = JsonSerializer.Serialize(messageValue)
+            });
+
             var updateMessageTask = Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
 
-            await Task.WhenAll(receiveMessageTask, updateMessageTask);
+            await Task.WhenAll(karfkaSendMessageTask, updateMessageTask);
         }
 
         public async Task HeartBeat()

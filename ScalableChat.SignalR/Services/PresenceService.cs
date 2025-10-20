@@ -19,5 +19,15 @@ namespace ScalableChat.SignalR.Services
             await db.KeyDeleteAsync($"user:{userId}:presence");
             logger.LogInformation("[{User}] presence removed", userId);
         }
+
+        public async Task<string?> GetUserPresenceAsync(string userId)
+        {
+            var serverId = await db.StringGetAsync($"user:{userId}:presence");
+            if (serverId.IsNullOrEmpty)
+            {
+                return null;
+            }
+            return serverId;
+        }
     }
 }
