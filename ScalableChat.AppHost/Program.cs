@@ -15,7 +15,8 @@ var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signal
     .WaitFor(cache)
     .WithReference(kafka)
     .WaitFor(kafka)
-    .WithReplicas(2);
+    //.WithReplicas(2)
+    ;
 
 builder.AddNpmApp("react", "../ScalableChat.Ui", "dev")
     .WithReference(chatApi)

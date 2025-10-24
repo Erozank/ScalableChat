@@ -6,6 +6,7 @@ using ScalableChat.Common.Infrastucture;
 using ScalableChat.Common.Repositories;
 using ScalableChat.SignalR.Hubs;
 using ScalableChat.SignalR.Services;
+using ScalableChat.SignalR.Services.MessageHandlers;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,16 @@ builder.AddServiceDefaults();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Add SignalR
 builder.Services.AddSignalR();
+
+// Register Kafka message handlers
+builder.Services.AddSingleton<IKafkaMessageHandler, SendMessageHandler>();
+builder.Services.AddSingleton<IKafkaMessageHandler, FriendDeletedHandler>();
+builder.Services.AddSingleton<IKafkaMessageHandler, ChatDeletedHandler>();
+builder.Services.AddSingleton<IKafkaMessageHandler, FriendRequestAcceptedHandler>();
+builder.Services.AddSingleton<IKafkaMessageHandler, SendFriendRequestHandler>();
+builder.Services.AddSingleton<KafkaMessageHandlerService>();
 
 builder.AddRedisClient(connectionName: "cache");
 
@@ -116,5 +126,6 @@ app.UseCors("CorsPolicy");
 app.MapHub<ChatHub>("/chat");
 
 app.Run();
+
 
 

@@ -3,12 +3,19 @@ using Microsoft.AspNetCore.SignalR;
 using ScalableChat.Common.Models;
 using ScalableChat.SignalR.Hubs;
 using ScalableChat.SignalR.Models;
+using ScalableChat.SignalR.Services.MessageHandlers;
 using System.Text.Json;
 
 namespace ScalableChat.SignalR.Services
 {
-    public class KafkaConsumerService(ILogger<KafkaConsumerService> logger, IProducer<string, string> producer, IConsumer<string, string> consumer, IHubContext<ChatHub> hubContext) : BackgroundService
+    public class KafkaConsumerService (ILogger<KafkaConsumerService> logger,
+            IProducer<string, string> producer,
+            IConsumer<string, string> consumer,
+            IHubContext<ChatHub> hubContext,
+            KafkaMessageHandlerService messageHandler)
+        : BackgroundService
     {
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var topic = $"delivery_to_server.{ServerIdentity.ServerId}";
@@ -23,28 +30,20 @@ namespace ScalableChat.SignalR.Services
                 {
                     var consumeResult = consumer.Consume(TimeSpan.FromSeconds(5));
 
-                    if(consumeResult is null)
+                    if (consumeResult is null)
                     {
                         continue;
                     }
 
-                    var kafkaMessage = JsonSerializer.Deserialize<KafkaMessage<Message>>(consumeResult.Message.Value);
+                    await messageHandler.HandleMessageAsync(consumeResult.Message.Value, hubContext);
 
-                    if (kafkaMessage is not null)
-                    {
-                        await hubContext.Clients.User(kafkaMessage.Receiver).SendAsync("ReceiveMessage", kafkaMessage.Payload);
-                        
-                        logger.LogInformation("Consumed message '{Message}' from topic '{Topic}' at offset {Offset}",
-                        consumeResult.Message.Value,
+                    logger.LogInformation("Consumed message from topic '{Topic}' at offset {Offset}",
                         consumeResult.Topic,
                         consumeResult.Offset);
-                    }
-                    
-                    await Task.Delay(5000);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    logger.LogError("Error consuming message from topic '{Topic}'", topic);
+                    logger.LogError(ex, "Error consuming message from topic '{Topic}'", topic);
                 }
             }
         }
@@ -53,6 +52,7 @@ namespace ScalableChat.SignalR.Services
         {
             var messageValue = new KafkaMessage<Message>
             {
+                Action = KafkaActionType.Empty,
                 Receiver = Guid.Empty.ToString(),
                 Payload = null
             };
