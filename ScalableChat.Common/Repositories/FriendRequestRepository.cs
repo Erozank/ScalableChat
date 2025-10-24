@@ -40,7 +40,7 @@ namespace ScalableChat.Common.Repositories
             }
             var boundStatement = _getReceivedFriendRequestsPrep!.Bind(userId);
             var resultSet = await _session.ExecuteAsync(boundStatement);
-            var ids = resultSet.Where(x => x.GetValue<int>("status") == 0).Select(row => row.GetValue<Guid>("from_user_id"));
+            var ids = resultSet.Where(x => x.GetValue<int>("status") == (int)FriendshipStatus.Pending).Select(row => row.GetValue<Guid>("from_user_id"));
 
             return await IdsToUserPreview(ids);
         }
@@ -93,7 +93,7 @@ namespace ScalableChat.Common.Repositories
                     UPDATE scalable_chat.friend_requests
                     SET status = ?, responded_at = ?
                     WHERE from_user_id = ? AND to_user_id = ?",
-                    1, now, fromUserId, toUserId
+                    (int)FriendshipStatus.Accepted, now, fromUserId, toUserId
                 ))
                 .Add(new SimpleStatement(@"
                     INSERT INTO scalable_chat.user_friends (user_id, friend_id, since)
@@ -153,13 +153,13 @@ namespace ScalableChat.Common.Repositories
                     UPDATE scalable_chat.friend_requests
                     SET status = ?, responded_at = ?
                     WHERE from_user_id = ? AND to_user_id = ?",
-                    1, now, userId, friendId
+                    (int)FriendshipStatus.Rejected, now, userId, friendId
                 ))
                 .Add(new SimpleStatement(@"
                     UPDATE scalable_chat.friend_requests
                     SET status = ?, responded_at = ?
                     WHERE from_user_id = ? AND to_user_id = ?",
-                    1, now, friendId, userId
+                    (int)FriendshipStatus.Rejected, now, friendId, userId
                 ))
                 .Add(new SimpleStatement(@"
                     DELETE FROM scalable_chat.user_friends

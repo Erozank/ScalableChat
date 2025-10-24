@@ -42,7 +42,8 @@ namespace ScalableChat.SignalR.Hubs
                 return false; // User not found
             }
 
-            await Clients.User(recipientUserId.ToString()!).SendAsync("ReceiveFriendRequest", userPreview);
+            await SendKafkaMessage(userPreview, recipientUserId.Value, KafkaActionType.SendFriendRequest);
+            //await Clients.User(recipientUserId.ToString()!).SendAsync("ReceiveFriendRequest", userPreview);
 
             var friendshipStatus = await friendsRepository.GetFriendshipStatus(senderUserId, recipientUserId.Value);
             
@@ -78,7 +79,8 @@ namespace ScalableChat.SignalR.Hubs
                     Nickname = Context.User!.Claims.First(x => x.Type == "nickname").Value
                 };
 
-                await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", user);
+                await SendKafkaMessage(user, userId, KafkaActionType.FriendRequestAccepted);
+                // await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", user);
             }
         }
 
@@ -87,7 +89,8 @@ namespace ScalableChat.SignalR.Hubs
             var userId = Guid.Parse(Context.UserIdentifier!);
             var friendId = await chatRepository.DeleteChatByChatId(chatId, userId);
 
-            await Clients.User(friendId.ToString()!).SendAsync("ChatDeleted", chatId);
+            await SendKafkaMessage(chatId, friendId, KafkaActionType.ChatDeleted);
+            // await Clients.User(friendId.ToString()!).SendAsync("ChatDeleted", chatId);
         }
 
         public async Task DeleteFriend(Guid userId)
@@ -96,7 +99,9 @@ namespace ScalableChat.SignalR.Hubs
             var deleteFriendTask = friendsRepository.DeleteFriend(userId, recipientUserId);
             var deleteChatTask = chatRepository.DeleteChatByUserIds(userId, recipientUserId);
 
-            var fiendDeletedTask = Clients.User(userId.ToString()!).SendAsync("FriendDeleted", recipientUserId);
+            var fiendDeletedTask = SendKafkaMessage(recipientUserId, userId, KafkaActionType.FriendDeleted);
+
+            //var fiendDeletedTask = Clients.User(userId.ToString()!).SendAsync("FriendDeleted", recipientUserId);
 
             await Task.WhenAll(deleteFriendTask, deleteChatTask, fiendDeletedTask);
         }
@@ -116,29 +121,37 @@ namespace ScalableChat.SignalR.Hubs
             var userId = Guid.Parse(Context.UserIdentifier!);
             var message = await chatRepository.SendMessage(userId, friendId, chatId, content);
 
-            var targetServerId = await presenceService.GetUserPresenceAsync(friendId.ToString()!);
-            var topic = $"delivery_to_server.{targetServerId}";
-
-            var messageValue = new KafkaMessage<Message>
-            {
-                Receiver = friendId.ToString()!,
-                Payload = message
-            };
-            var karfkaSendMessageTask = producer.ProduceAsync(topic, new Message<string, string>
-            {
-                Key = message.Id.ToString(),
-                Value = JsonSerializer.Serialize(messageValue)
-            });
-
+            var sendKafkaMessageTask = SendKafkaMessage(message, friendId, KafkaActionType.SendMessage);
+            
             var updateMessageTask = Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
 
-            await Task.WhenAll(karfkaSendMessageTask, updateMessageTask);
+            await Task.WhenAll(sendKafkaMessageTask, updateMessageTask);
         }
 
         public async Task HeartBeat()
         {
             var userId = Context.UserIdentifier;
             await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
+        }
+
+
+        private async Task SendKafkaMessage<T>(T payload, Guid userId, KafkaActionType action)
+        {
+            var targetServerId = await presenceService.GetUserPresenceAsync(userId.ToString());
+            var topic = $"delivery_to_server.{targetServerId}";
+
+            var messageValue = new KafkaMessage<T>
+            {
+                Action = action,
+                Receiver = userId.ToString(),
+                Payload = payload
+            };
+
+            await producer.ProduceAsync(topic, new Message<string, string>
+            {
+                Key = messageValue.Receiver,
+                Value = JsonSerializer.Serialize(messageValue)
+            });
         }
     }
 }
