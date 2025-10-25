@@ -106,6 +106,21 @@ const App = () => {
     // Send a request to start a chat with the selected friend
     if (!isLoggedIn) return;
 
+    // Check if a chat already exists with this friend
+    const existingChat = chats.find(chat => chat.friendId === friend.userId);
+    if (existingChat) {
+      console.log('Chat already exists, opening existing chat:', existingChat.chatId);
+      navigate('/');
+      window.selectChat = existingChat;
+      
+      setTimeout(() => {
+        if (window.handleStartChat) {
+          window.handleStartChat({ ...friend, chatId: existingChat.chatId });
+        }
+      }, 100);
+      return;
+    }
+
     try {
       const response = await fetch(`${apiServer}/chat?friendId=${friend.userId}`, {
         method: 'POST',
