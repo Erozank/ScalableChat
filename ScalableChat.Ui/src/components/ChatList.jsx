@@ -72,12 +72,13 @@ const ChatList = ({ chats, selectedChatId, onSelectChat, onDeleteChat, connectio
             return (
               <ListGroup.Item
                 key={chat.chatId}
-                action
+                as="div"
                 active={isSelected}
                 className={`chat-list-item d-flex justify-content-between align-items-start ${isSelected ? 'active' : ''}`}
-                style={{ position: 'relative' }}
+                style={{ position: 'relative', cursor: 'pointer' }}
+                onClick={() => onSelectChat(chat)}
               >
-                <div className="w-100" onClick={() => onSelectChat(chat)} style={{ cursor: 'pointer' }}>
+                <div className="w-100">
                   <div className="d-flex justify-content-between align-items-center mb-1">
                     <h6 className="mb-0">{chat.name}</h6>
                     <div className="d-flex align-items-center gap-2">
