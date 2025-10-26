@@ -203,13 +203,15 @@ const App = () => {
     const handleReceiveMessage = (message) => {
       console.log('Received message:', message);
       setChats(prevChats => {
-        // Check if chat exists
+          // Check if chat exists
         const existingChat = prevChats.find(chat => chat.chatId === message.chatId);
         if (!existingChat) {
+          // Find the friend's nickname from friends list
+          const friend = friends.find(f => f.userId === message.senderId);
           // Create new chat if it doesn't exist
           const newChat = {
             chatId: message.chatId,
-            name: message.senderNickname || 'No name',
+            name: friend ? friend.nickname : 'No name',
             friendId: message.senderId,
             messages: [message],
             unreadCount: 1

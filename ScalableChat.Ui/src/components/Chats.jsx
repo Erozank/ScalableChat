@@ -63,6 +63,7 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
           connection={connection}
           nickname={nickname}
           userId={userId}
+          setChats={setChats}
         />
       </Col>
     </Row>

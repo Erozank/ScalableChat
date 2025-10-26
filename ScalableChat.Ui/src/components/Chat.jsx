@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Form, Button } from 'react-bootstrap';
 
-const Chat = ({ selectedChat, connection, nickname, userId }) => {
+const Chat = ({ selectedChat, connection, nickname, userId, setChats }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
@@ -29,6 +29,7 @@ const Chat = ({ selectedChat, connection, nickname, userId }) => {
     if (!connection) return;
 
     const handleReceiveMessage = (message) => {
+      // Update local messages if it's the current chat
       if (message.chatId === selectedChat?.chatId) {
         setMessages(prev => {
           const exists = prev.some(m => m.id === message.id);
@@ -38,6 +39,23 @@ const Chat = ({ selectedChat, connection, nickname, userId }) => {
           );
         });
       }
+      
+      // Update global chats state
+      setChats(prevChats => 
+        prevChats.map(chat => {
+          if (chat.chatId === message.chatId) {
+            const exists = chat.messages?.some(m => m.id === message.id);
+            if (exists) return chat;
+            return {
+              ...chat,
+              messages: [...(chat.messages || []), message].sort(
+                (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+              )
+            };
+          }
+          return chat;
+        })
+      );
     };
 
     const handleUpdateMessageId = (oldId, newId) => {
@@ -56,7 +74,7 @@ const Chat = ({ selectedChat, connection, nickname, userId }) => {
       connection.off("ReceiveMessage", handleReceiveMessage);
       connection.off("UpdateMessageId", handleUpdateMessageId);
     };
-  }, [connection, selectedChat?.chatId]);
+  }, [connection, selectedChat?.chatId, setChats]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -73,6 +91,18 @@ const Chat = ({ selectedChat, connection, nickname, userId }) => {
 
     // Add local message to the messages list
     setMessages(prev => [...prev, localMessage]);
+
+    // Update global chats state with the new message
+    setChats(prevChats => 
+      prevChats.map(chat => 
+        chat.chatId === selectedChat.chatId 
+          ? { 
+              ...chat, 
+              messages: [...(chat.messages || []), localMessage]
+            }
+          : chat
+      )
+    );
 
     try {
       await connection.invoke("SendMessage", selectedChat?.chatId, selectedChat?.friendId, localMessage.content, localMessage.id);
