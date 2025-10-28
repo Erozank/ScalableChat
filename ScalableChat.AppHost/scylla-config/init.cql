@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS direct_chats_by_chat_id (
     user_b UUID
 );
 
-CREATE TABLE user_chats (
+CREATE TABLE IF NOT EXISTS user_chats (
     user_id UUID,
     chat_id UUID,
     last_message_at TIMESTAMP,
