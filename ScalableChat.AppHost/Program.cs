@@ -7,6 +7,17 @@ var cache = builder.AddRedis("cache");
 var kafka = builder.AddKafka("kafka")
     .WithKafkaUI();
 
+var scylla = builder.AddContainer("scylla-node1", "scylladb/scylla", "latest")
+    .WithArgs("--seeds=scylla-node1")
+    .WithVolume("scylla_node1_data", "/var/lib/scylla")
+    .WithEndpoint(port: 9042, targetPort: 9042, "cql")
+    .WithContainerName("scylla-node1");
+
+builder.AddContainer("ini-scylla", "nuvo/docker-cqlsh")
+    .WithBindMount("./scylla-config/init.cql", "/init.cql")
+    .WithBindMount("./scylla-config/entrypoint.sh", "/entrypoint.sh")
+    .WithEntrypoint("/entrypoint.sh");
+
 var chatApi = builder.AddProject<Projects.ScalableChat_Api>("chat-api")
     .WithSwagger();
 
