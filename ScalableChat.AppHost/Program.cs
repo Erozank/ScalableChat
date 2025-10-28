@@ -19,13 +19,15 @@ builder.AddContainer("ini-scylla", "nuvo/docker-cqlsh")
     .WithEntrypoint("/entrypoint.sh");
 
 var chatApi = builder.AddProject<Projects.ScalableChat_Api>("chat-api")
-    .WithSwagger();
+    .WithSwagger()
+    .WaitFor(scylla);
 
 var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signalr")
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(kafka)
     .WaitFor(kafka)
+    .WaitFor(scylla)
     //.WithReplicas(2)
     ;
 
