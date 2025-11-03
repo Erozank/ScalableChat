@@ -24,4 +24,13 @@
     <ProjectReference Include="..\ScalableChat.SignalR\ScalableChat.SignalR.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="scylla-config\entrypoint.sh">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="scylla-config\init.cql">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

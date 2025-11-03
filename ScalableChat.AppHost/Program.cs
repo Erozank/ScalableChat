@@ -16,7 +16,8 @@ var scylla = builder.AddContainer("scylla-node1", "scylladb/scylla", "latest")
 builder.AddContainer("ini-scylla", "nuvo/docker-cqlsh")
     .WithBindMount("./scylla-config/init.cql", "/init.cql")
     .WithBindMount("./scylla-config/entrypoint.sh", "/entrypoint.sh")
-    .WithEntrypoint("/entrypoint.sh");
+    .WithEntrypoint("/entrypoint.sh")
+    .WaitFor(scylla);
 
 var chatApi = builder.AddProject<Projects.ScalableChat_Api>("chat-api")
     .WithSwagger()
