@@ -15,14 +15,16 @@ namespace ScalableChat.SignalR.Hubs
         public override async Task OnConnectedAsync()
         {
             var userId = Context.UserIdentifier;
-            await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
+            var connectionId = Context.ConnectionId;
+            await presenceService.UpdatePresenceAsync(userId!, connectionId, ServerIdentity.ServerId);
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.UserIdentifier;
-            await presenceService.RemovePresenceAsync(userId!);
+            var connectionId = Context.ConnectionId;
+            await presenceService.RemovePresenceAsync(userId!, connectionId);
             await base.OnDisconnectedAsync(exception);
         }
 
@@ -43,7 +45,6 @@ namespace ScalableChat.SignalR.Hubs
             }
 
             await SendKafkaMessage(userPreview, recipientUserId.Value, KafkaActionType.SendFriendRequest);
-            //await Clients.User(recipientUserId.ToString()!).SendAsync("ReceiveFriendRequest", userPreview);
 
             var friendshipStatus = await friendsRepository.GetFriendshipStatus(senderUserId, recipientUserId.Value);
             
@@ -65,22 +66,24 @@ namespace ScalableChat.SignalR.Hubs
             return true;
         }
 
-        public async Task AcceptFriendRequest(Guid userId)
+        public async Task AcceptFriendRequest(Guid friendId)
         {
-            var recipientUserId = Guid.Parse(Context.UserIdentifier!);
-            var friendshipStatus = await friendsRepository.GetFriendshipStatus(userId, recipientUserId);
+            var userId = Guid.Parse(Context.UserIdentifier!);
+            var friendshipStatus = await friendsRepository.GetFriendshipStatus(friendId, userId);
             if (friendshipStatus == FriendshipStatus.Pending)
             {
-                await friendsRepository.AcceptFriendRequestAsync(userId, recipientUserId);
+                await friendsRepository.AcceptFriendRequestAsync(friendId, userId);
                 
                 var user = new UserPreview
                 {
-                    UserId = recipientUserId,
+                    UserId = userId,
                     Nickname = Context.User!.Claims.First(x => x.Type == "nickname").Value
                 };
 
-                await SendKafkaMessage(user, userId, KafkaActionType.FriendRequestAccepted);
-                // await Clients.User(userId.ToString()!).SendAsync("FriendRequestAccepted", user);
+                await SendKafkaMessage(user, friendId, KafkaActionType.FriendRequestAccepted);
+
+                var friend = await userRepository.GetUserPreviewByUserId(friendId);
+                await SendKafkaMessage(friend, userId, KafkaActionType.FriendRequestAccepted);
             }
         }
 
@@ -90,20 +93,19 @@ namespace ScalableChat.SignalR.Hubs
             var friendId = await chatRepository.DeleteChatByChatId(chatId, userId);
 
             await SendKafkaMessage(chatId, friendId, KafkaActionType.ChatDeleted);
-            // await Clients.User(friendId.ToString()!).SendAsync("ChatDeleted", chatId);
+            await SendKafkaMessage(chatId, userId, KafkaActionType.ChatDeleted);
         }
 
-        public async Task DeleteFriend(Guid userId)
+        public async Task DeleteFriend(Guid friendId)
         {
-            var recipientUserId = Guid.Parse(Context.UserIdentifier!);
-            var deleteFriendTask = friendsRepository.DeleteFriend(userId, recipientUserId);
-            var deleteChatTask = chatRepository.DeleteChatByUserIds(userId, recipientUserId);
+            var userId = Guid.Parse(Context.UserIdentifier!);
+            var deleteFriendTask = friendsRepository.DeleteFriend(friendId, userId);
+            var deleteChatTask = chatRepository.DeleteChatByUserIds(friendId, userId);
 
-            var fiendDeletedTask = SendKafkaMessage(recipientUserId, userId, KafkaActionType.FriendDeleted);
+            var fiendDeletedTask = SendKafkaMessage(userId, friendId, KafkaActionType.FriendDeleted);
+            var fiendDeletedTask2 = SendKafkaMessage(friendId, userId, KafkaActionType.FriendDeleted);
 
-            //var fiendDeletedTask = Clients.User(userId.ToString()!).SendAsync("FriendDeleted", recipientUserId);
-
-            await Task.WhenAll(deleteFriendTask, deleteChatTask, fiendDeletedTask);
+            await Task.WhenAll(deleteFriendTask, deleteChatTask, fiendDeletedTask, fiendDeletedTask2);
         }
 
         public async Task RejectFriendrequest(Guid userId)
@@ -122,36 +124,42 @@ namespace ScalableChat.SignalR.Hubs
             var message = await chatRepository.SendMessage(userId, friendId, chatId, content);
 
             var sendKafkaMessageTask = SendKafkaMessage(message, friendId, KafkaActionType.SendMessage);
+            var sendKafkaMessageTask2 = SendKafkaMessage(message, userId, KafkaActionType.SendMessage);
             
             var updateMessageTask = Clients.User(userId.ToString()!).SendAsync("UpdateMessageId", tempMessageId, message.Id);
 
-            await Task.WhenAll(sendKafkaMessageTask, updateMessageTask);
+            await Task.WhenAll(sendKafkaMessageTask, updateMessageTask, sendKafkaMessageTask2);
         }
 
         public async Task HeartBeat()
         {
             var userId = Context.UserIdentifier;
-            await presenceService.UpdatePresenceAsync(userId!, ServerIdentity.ServerId);
+            var connectionId = Context.ConnectionId;
+            await presenceService.UpdatePresenceAsync(userId!, connectionId, ServerIdentity.ServerId);
         }
 
 
         private async Task SendKafkaMessage<T>(T payload, Guid userId, KafkaActionType action)
         {
-            var targetServerId = await presenceService.GetUserPresenceAsync(userId.ToString());
-            var topic = $"delivery_to_server.{targetServerId}";
-
-            var messageValue = new KafkaMessage<T>
+            var serversIds = await presenceService.GetUserPresenceAsync(userId.ToString());
+            foreach (var serversId in serversIds)
             {
-                Action = action,
-                Receiver = userId.ToString(),
-                Payload = payload
-            };
+                var topic = $"delivery_to_server.{serversId}";
 
-            await producer.ProduceAsync(topic, new Message<string, string>
-            {
-                Key = messageValue.Receiver,
-                Value = JsonSerializer.Serialize(messageValue)
-            });
+                var messageValue = new KafkaMessage<T>
+                {
+                    Action = action,
+                    Receiver = userId.ToString(),
+                    Payload = payload
+                };
+
+                await producer.ProduceAsync(topic, new Message<string, string>
+                {
+                    Key = messageValue.Receiver,
+                    Value = JsonSerializer.Serialize(messageValue)
+                });
+            }
+
         }
     }
 }

@@ -59,12 +59,28 @@ const Chat = ({ selectedChat, connection, nickname, userId, setChats }) => {
     };
 
     const handleUpdateMessageId = (oldId, newId) => {
+      // Update local messages state
       setMessages(prev => {
         console.log('Messages before updating id:', prev);
         const updatedMessages = prev.map(m => m.id === oldId ? { ...m, id: newId } : m);
         console.log('Messages after updating id:', updatedMessages);
         return updatedMessages;
       });
+
+      // Update global chats state
+      setChats(prevChats => 
+        prevChats.map(chat => {
+          if (chat.chatId === selectedChat?.chatId) {
+            return {
+              ...chat,
+              messages: (chat.messages || []).map(m => 
+                m.id === oldId ? { ...m, id: newId } : m
+              )
+            };
+          }
+          return chat;
+        })
+      );
     }
 
     connection.on("ReceiveMessage", handleReceiveMessage);

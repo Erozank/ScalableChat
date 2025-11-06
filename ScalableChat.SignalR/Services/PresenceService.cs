@@ -8,26 +8,44 @@ namespace ScalableChat.SignalR.Services
         private readonly ILogger<PresenceService> logger = logger;
 
 
-        public async Task UpdatePresenceAsync(string userId, string serverId)
+        public async Task UpdatePresenceAsync(string userId, string connectionId, string serverId)
         {
-            await db.StringSetAsync($"user:{userId}:presence", serverId, TimeSpan.FromMinutes(1));
-            logger.LogInformation("[{User}] presence updated -> server {Server}", userId, serverId);
+            await db.StringSetAsync($"connection:{connectionId}:presence", serverId, TimeSpan.FromSeconds(60));
+            await db.SetAddAsync($"user:{userId}:connections", connectionId);
+
+            logger.LogInformation("[{User}] connection {Connection} updated -> server {Server}", userId, connectionId, serverId);
         }
 
-        public async Task RemovePresenceAsync(string userId)
+        public async Task RemovePresenceAsync(string userId, string connectionId)
         {
-            await db.KeyDeleteAsync($"user:{userId}:presence");
-            logger.LogInformation("[{User}] presence removed", userId);
+            await db.KeyDeleteAsync($"connection:{connectionId}:presence");
+            await db.SetRemoveAsync($"user:{userId}:connections", connectionId);
+
+            logger.LogInformation("[{User}] connection {Connection} removed", userId, connectionId);
         }
 
-        public async Task<string?> GetUserPresenceAsync(string userId)
+        public async Task<List<string>> GetUserPresenceAsync(string userId)
         {
-            var serverId = await db.StringGetAsync($"user:{userId}:presence");
-            if (serverId.IsNullOrEmpty)
+            var connectionIds = GetUserConnectionsAsync(userId);
+
+            var serverIds = new List<string>();
+
+            foreach (var connectionId in await connectionIds)
             {
-                return null;
+                var serverId = await db.StringGetAsync($"connection:{connectionId}:presence");
+                if (!serverId.IsNullOrEmpty)
+                {
+                    serverIds.Add(serverId.ToString());
+                }
             }
-            return serverId;
+
+            return serverIds.Distinct().ToList();
+        }
+
+        private async Task<List<string>> GetUserConnectionsAsync(string userId)
+        {
+            var connectionIds = await db.SetMembersAsync($"user:{userId}:connections");
+            return connectionIds.Select(x => x.ToString()).ToList();
         }
     }
 }

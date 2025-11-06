@@ -208,10 +208,49 @@ const App = () => {
         if (!existingChat) {
           // Find the friend's nickname from friends list
           const friend = friends.find(f => f.userId === message.senderId);
-          // Create new chat if it doesn't exist
+          
+          if (!friend) {
+            // If friend is not found, create chat with temporary name and fetch the real name
+            const tempChat = {
+              chatId: message.chatId,
+              name: 'No name',
+              friendId: message.senderId,
+              messages: [message],
+              unreadCount: 1
+            };
+
+            // Add chat with temporary name first
+            const newChats = [...prevChats, tempChat];
+
+            // Fetch the real chat name
+            fetch(`${apiServer}/chatinfo?chatId=${message.chatId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${jwt}`
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              // Update the chat name once we have it from the API
+              setChats(currentChats => 
+                currentChats.map(chat => 
+                  chat.chatId === message.chatId 
+                    ? { ...chat, name: data.chatInfo.nickname, friendId: data.chatInfo.userId }
+                    : chat
+                )
+              );
+            })
+            .catch(error => {
+              console.error('Error fetching chat name:', error);
+            });
+
+            return newChats;
+          }
+
+          // If friend is found, create chat with friend's nickname
           const newChat = {
             chatId: message.chatId,
-            name: friend ? friend.nickname : 'No name',
+            name: friend.nickname,
             friendId: message.senderId,
             messages: [message],
             unreadCount: 1
@@ -221,12 +260,16 @@ const App = () => {
         // Update existing chat
         return prevChats.map(chat => {
           if (chat.chatId === message.chatId) {
-            const messages = [...(chat.messages || [])];
-            const messageExists = messages.some(m => m.id === message.id);
+            // Check if message already exists
+            const messageExists = (chat.messages || []).some(m => m.id === message.id);
+            
+            // Only add the message if it doesn't exist
+            let messages = [...(chat.messages || [])];
             if (!messageExists) {
               messages.push(message);
               messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             }
+            
             // Only increment unreadCount if we're not in the chat view or the chat isn't selected
             const isInChatView = location.pathname === '/';
             const isChatSelected = window.selectChat?.chatId === message.chatId;
@@ -267,7 +310,7 @@ const App = () => {
       connection.off("ReceiveMessage", handleReceiveMessage);
       connection.off("FriendDeleted", handleFriendDeleted);
     };
-  }, [connection, setFriendRequests, setFriends, setChats, location.pathname, friends]);
+  }, [connection, setFriendRequests, setFriends, setChats, location.pathname, friends, apiServer, jwt]);
 
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
