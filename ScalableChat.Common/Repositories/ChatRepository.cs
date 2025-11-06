@@ -27,6 +27,25 @@ namespace ScalableChat.Common.Repositories
             return row?.GetValue<Guid>("chat_id");
         }
 
+        public async Task<UserPreview?> GetDirectChatInfo(Guid userId, Guid chatId)
+        {
+            var stmt = await _session.PrepareAsync("""
+            SELECT user_a, user_b FROM scalable_chat.direct_chats_by_chat_id
+            WHERE chat_id = ?
+            """);
+            var bound = stmt.Bind(chatId);
+            var resultSet = await _session.ExecuteAsync(bound);
+            var row = resultSet.FirstOrDefault();
+            if (row == null)
+            {
+                return null; // Chat not found
+            }
+            var friendId = row.GetValue<Guid>("user_a") == userId ? row.GetValue<Guid>("user_b") : row.GetValue<Guid>("user_a");
+            var friend = await _userRepository.GetUserPreviewByUserId(friendId);
+
+            return friend;
+        }
+
         public async Task<Guid> CreateDirectChatIfNotExistsAsync(Guid userA, Guid userB)
         {
             if (userA.CompareTo(userB) > 0)

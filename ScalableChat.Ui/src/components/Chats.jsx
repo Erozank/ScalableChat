@@ -37,13 +37,30 @@ const Chats = ({ connection, nickname, userId, chats, setChats }) => {
   // Function to handle selecting an existing chat
   const handleSelectChat = useCallback((chat) => {
     console.log('Selected chat:', chat);
-    setSelectedChat(chat);
-    // Mark as read
+    
+    // Remove duplicate messages and mark as read
     setChats(prevChats =>
-      prevChats.map(c =>
-        c.chatId === chat.chatId ? { ...c, unreadCount: 0 } : c
-      )
+      prevChats.map(c => {
+        if (c.chatId === chat.chatId) {
+          // Create a Map to keep only unique messages by id
+          const uniqueMessages = new Map();
+          (c.messages || []).forEach(msg => {
+            if (!uniqueMessages.has(msg.id)) {
+              uniqueMessages.set(msg.id, msg);
+            }
+          });
+          
+          // Convert Map back to array and sort by creation date
+          const messages = Array.from(uniqueMessages.values())
+            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          
+          return { ...c, messages, unreadCount: 0 };
+        }
+        return c;
+      })
     );
+
+    setSelectedChat(chat);
   }, [setChats]);
 
   return (

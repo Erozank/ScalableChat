@@ -40,5 +40,20 @@ namespace ScalableChat.Api.Controllers
             var chats = await _chatRepository.GetUserChatsAsync(userId);
             return Ok(chats);
         }
+
+
+        [Authorize]
+        [HttpGet("chatinfo")]
+        public async Task<IActionResult> GetChatInfo(Guid chatId)
+        {
+            var stringUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (stringUserId == null || !Guid.TryParse(stringUserId, out Guid userId) || chatId == Guid.Empty)
+            {
+                return BadRequest("Invalid ID.");
+            }
+
+            var chatInfo = await _chatRepository.GetDirectChatInfo(userId, chatId);
+            return Ok(new { chatInfo });
+        }
     }
 }
