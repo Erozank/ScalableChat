@@ -24,13 +24,14 @@ namespace ScalableChat.SignalR.Services
             logger.LogInformation("[{User}] connection {Connection} removed", userId, connectionId);
         }
 
-        public async Task<List<string>> GetUserPresenceAsync(string userId)
+        public async Task<List<string>> GetUserPresenceAsync(string userId, string excludeConnection)
         {
-            var connectionIds = GetUserConnectionsAsync(userId);
+            var connectionIds = await GetUserConnectionsAsync(userId);
+            var targetConnectionIds = connectionIds.Where(x => x != excludeConnection).ToList();
 
             var serverIds = new List<string>();
 
-            foreach (var connectionId in await connectionIds)
+            foreach (var connectionId in targetConnectionIds)
             {
                 var serverId = await db.StringGetAsync($"connection:{connectionId}:presence");
                 if (!serverId.IsNullOrEmpty)
