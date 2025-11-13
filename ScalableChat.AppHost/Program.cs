@@ -1,4 +1,3 @@
-using Arshid.Aspire.ApiDocs.Extensions;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -20,7 +19,6 @@ builder.AddContainer("ini-scylla", "nuvo/docker-cqlsh")
     .WaitFor(scylla);
 
 var chatApi = builder.AddProject<Projects.ScalableChat_Api>("chat-api")
-    .WithSwagger()
     .WaitFor(scylla);
 
 var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signalr")
@@ -29,7 +27,7 @@ var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signal
     .WithReference(kafka)
     .WaitFor(kafka)
     .WaitFor(scylla)
-    //.WithReplicas(2)
+    .WithReplicas(4)
     ;
 
 builder.AddNpmApp("react", "../ScalableChat.Ui", "dev")
