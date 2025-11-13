@@ -1,9 +1,8 @@
 using Cassandra;
-using ScalableChat.Api.Extensions;
-using ScalableChat.Common.Infrastucture;
-using ScalableChat.Common.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ScalableChat.Common.Infrastucture;
+using ScalableChat.Common.Repositories;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +12,7 @@ builder.AddServiceDefaults();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGenWithAuth();
+builder.Services.AddOpenApi();
 
 builder.Services.AddSignalR();
 
@@ -89,8 +88,7 @@ app.MapDefaultEndpoints();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
