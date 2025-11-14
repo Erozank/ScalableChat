@@ -65,19 +65,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
-// Configure CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("CorsPolicy", builder =>
-    {
-        builder.SetIsOriginAllowed((host) => true)
-               .AllowAnyHeader()
-               .AllowAnyMethod()
-               .AllowCredentials();
-    });
-});
-
 builder.Services.AddSingleton<TokenProvider>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -121,9 +108,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseCors("CorsPolicy");
-
-app.MapHub<ChatHub>("/chat");
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();
 

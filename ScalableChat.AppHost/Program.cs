@@ -1,4 +1,6 @@
 
+using Aspire.Hosting.Yarp.Transforms;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache");
@@ -30,7 +32,7 @@ var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signal
     .WithReplicas(4)
     ;
 
-builder.AddNpmApp("react", "../ScalableChat.Ui", "dev")
+var react = builder.AddNpmApp("react", "../ScalableChat.Ui", "dev")
     .WithReference(chatApi)
     .WaitFor(chatApi)
     .WithReference(chatSignalR)
@@ -39,5 +41,17 @@ builder.AddNpmApp("react", "../ScalableChat.Ui", "dev")
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
     .PublishAsDockerFile();
+
+var gateway = builder.AddYarp("gateway")
+    .WithConfiguration(yarp =>
+    {
+        // Add catch-all route for frontend service 
+        yarp.AddRoute(react);
+
+        yarp.AddRoute("/api/{**catch-all}", chatApi)
+            .WithTransformPathRemovePrefix("/api");
+
+        yarp.AddRoute("/chathub/{**catch-all}", chatSignalR);
+    });
 
 builder.Build().Run();

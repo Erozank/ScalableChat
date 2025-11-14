@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using ScalableChat.Common.Enums;
 using ScalableChat.Common.Models;
@@ -9,6 +10,7 @@ using System.Text.Json;
 
 namespace ScalableChat.SignalR.Hubs
 {
+    [Authorize]
     public class ChatHub(IPresenceService presenceService, IUserRepository userRepository, IFriendRequestRepository friendsRepository, IChatRepository chatRepository,
         IProducer<string, string> producer) : Hub
     {

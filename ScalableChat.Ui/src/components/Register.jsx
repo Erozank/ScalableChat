@@ -8,7 +8,6 @@ function Register({ setIsLoggedIn, setJwt }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const apiServer = import.meta.env.VITE_CHAT_API;
   const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
@@ -17,7 +16,7 @@ function Register({ setIsLoggedIn, setJwt }) {
     setSuccess(false);
 
     try {
-      const response = await fetch(`${apiServer}/register`, {
+      const response = await fetch(`/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname, password }),
