@@ -7,13 +7,12 @@ function Login({ setIsLoggedIn, setJwt }) {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const apiServer = import.meta.env.VITE_CHAT_API;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     try {
-      const response = await axios.post(`${apiServer}/login`, {
+      const response = await axios.post(`/api/login`, {
         nickname,
         password,
       });

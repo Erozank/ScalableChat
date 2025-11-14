@@ -16,6 +16,7 @@
     <PackageReference Include="Aspire.Hosting.Kafka" Version="13.0.0" />
     <PackageReference Include="Aspire.Hosting.NodeJs" Version="9.5.2" />
     <PackageReference Include="Aspire.Hosting.Redis" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Yarp" Version="13.0.0" />
   </ItemGroup>
 
   <ItemGroup>

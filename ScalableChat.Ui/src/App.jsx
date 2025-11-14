@@ -19,8 +19,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const apiServer = import.meta.env.VITE_CHAT_API;
-  const signalRServer = import.meta.env.VITE_SIGNALR_API;
 
   // Global states
   const [connection, setConnection] = useState();
@@ -53,7 +51,7 @@ const App = () => {
   useEffect(() => {
     if (isLoggedIn && !connection) {
       const newConnection = new HubConnectionBuilder()
-        .withUrl(`${signalRServer}/chat`, {
+        .withUrl(`/chathub`, {
           accessTokenFactory: () => jwt,
         })
         .withAutomaticReconnect()
@@ -80,7 +78,7 @@ const App = () => {
         })
         .catch((err) => console.log("SignalR Connection Error: ", err));
     }
-  }, [isLoggedIn, connection, apiServer, signalRServer, jwt]);
+  }, [isLoggedIn, connection, jwt]);
 
   const sendFriendRequest = async (friendName) => {
     if (!connection) return;
@@ -122,7 +120,7 @@ const App = () => {
     }
 
     try {
-      const response = await fetch(`${apiServer}/chat?friendId=${friend.userId}`, {
+      const response = await fetch(`/api/chat?friendId=${friend.userId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${jwt}`
@@ -172,7 +170,7 @@ const App = () => {
     friends, setFriends,
     friendRequests, setFriendRequests,
     chats, setChats
-  } = useInitialChatData(isLoggedIn, apiServer, jwt);
+  } = useInitialChatData(isLoggedIn, jwt);
 
   // Global event handlers for friend requests
   useEffect(() => {
@@ -223,7 +221,7 @@ const App = () => {
             const newChats = [...prevChats, tempChat];
 
             // Fetch the real chat name
-            fetch(`${apiServer}/chatinfo?chatId=${message.chatId}`, {
+            fetch(`/api/chatinfo?chatId=${message.chatId}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${jwt}`
@@ -310,7 +308,7 @@ const App = () => {
       connection.off("ReceiveMessage", handleReceiveMessage);
       connection.off("FriendDeleted", handleFriendDeleted);
     };
-  }, [connection, setFriendRequests, setFriends, setChats, location.pathname, friends, apiServer, jwt]);
+  }, [connection, setFriendRequests, setFriends, setChats, location.pathname, friends, jwt]);
 
   useEffect(() => {
     document.body.className = darkMode ? "dark-mode" : "";
@@ -358,7 +356,6 @@ const App = () => {
                     <Login setIsLoggedIn={setIsLoggedIn} setJwt={setJwt} />
                   ) : (
                     <Chats
-                      apiServer={apiServer}
                       jwt={jwt}
                       connection={connection}
                       nickname={nickname}

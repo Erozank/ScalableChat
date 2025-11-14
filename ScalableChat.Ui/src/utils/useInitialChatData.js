@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export function useInitialChatData(isLoggedIn, apiServer, jwt) {
+export function useInitialChatData(isLoggedIn, jwt) {
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [chats, setChats] = useState([]);
@@ -12,7 +12,7 @@ export function useInitialChatData(isLoggedIn, apiServer, jwt) {
     // Fetch friends
     const fetchFriends = async () => {
       try {
-        const response = await axios.get(`${apiServer}/friends`, {
+        const response = await axios.get(`/api/friends`, {
           headers: { Authorization: `Bearer ${jwt}` },
         });
         setFriends(response.data.friends || []);
@@ -24,7 +24,7 @@ export function useInitialChatData(isLoggedIn, apiServer, jwt) {
     // Fetch friend requests
     const fetchFriendRequests = async () => {
       try {
-        const response = await axios.get(`${apiServer}/friend-requests`, {
+        const response = await axios.get(`/api/friend-requests`, {
           headers: { Authorization: `Bearer ${jwt}` },
         });
         setFriendRequests(response.data.receivedRequests || []);
@@ -36,7 +36,7 @@ export function useInitialChatData(isLoggedIn, apiServer, jwt) {
     // Fetch chats
     const fetchChats = async () => {
       try {
-        const response = await axios.get(`${apiServer}/chats`, {
+        const response = await axios.get(`/api/chats`, {
           headers: { Authorization: `Bearer ${jwt}` },
         });
         const chatsData = response.data || [];
@@ -58,7 +58,7 @@ export function useInitialChatData(isLoggedIn, apiServer, jwt) {
     fetchFriends();
     fetchFriendRequests();
     fetchChats();
-  }, [isLoggedIn, apiServer, jwt]);
+  }, [isLoggedIn, jwt]);
 
   return {
     friends, setFriends,
