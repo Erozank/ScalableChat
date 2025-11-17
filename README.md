@@ -80,7 +80,6 @@ To run this project locally, you need to have the following prerequisites instal
     ```bash
     cd src/ScalableChat.AppHost 
     ```
-    *(Note: Adjust the path based on your actual repository structure)*
 
 3.  **Run the Aspire orchestrator**:
     ```bash
