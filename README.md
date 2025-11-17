@@ -19,7 +19,7 @@ This project is built using a modern and powerful technology stack:
 
 -   **Orchestration**: .NET Aspire
 -   **Frontend**: React
--   **Backend API**: .NET 8
+-   **Backend API**: .NET 10
 -   **Real-Time Communication**: SignalR
 -   **Reverse Proxy**: YARP (Yet Another Reverse Proxy)
 -   **Databases**:
@@ -85,6 +85,11 @@ To run this project locally, you need to have the following prerequisites instal
     ```bash
     dotnet run
     ```
+
+4.  **Access the Application**:
+    Once all services are running, the .NET Aspire dashboard will open in your browser. In the dashboard, find the **`gateway`** service endpoint and click its URL. This will open the React frontend. The gateway acts as a single entry point, routing requests to the frontend, API, and SignalR services as needed.
+
+    ![Aspire table](/images/aspire-table.png)
 
 This command will start the .NET Aspire orchestrator, which will automatically build, configure, and launch all the necessary services (React app, API servers, SignalR servers, Redis, Kafka, ScyllaDB) as defined in the `Program.cs` file. You can monitor the status of all services in the Aspire dashboard, which will open in your browser.
 
