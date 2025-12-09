@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="ScalableChat.Api/ScalableChat.Api.csproj" />
+  <Project Path="ScalableChat.AppHost/ScalableChat.AppHost.csproj" />
+  <Project Path="ScalableChat.Common/ScalableChat.Common.csproj" />
+  <Project Path="ScalableChat.ServiceDefaults/ScalableChat.ServiceDefaults.csproj" />
+  <Project Path="ScalableChat.SignalR/ScalableChat.SignalR.csproj" />
+</Solution>
