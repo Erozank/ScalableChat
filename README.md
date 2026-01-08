@@ -17,10 +17,10 @@ ScalableChat is a modern, real-time chat application built with a focus on high 
 
 This project is built using a modern and powerful technology stack:
 
--   **Orchestration**: .NET Aspire
+-   **Orchestration**: Aspire
 -   **Frontend**: React
 -   **Backend API**: .NET 10
--   **Real-Time Communication**: SignalR
+-   **Real-Time Communication**: SignalR (.NET 10)
 -   **Reverse Proxy**: YARP (Yet Another Reverse Proxy)
 -   **Databases**:
     -   **ScyllaDB**: A high-performance NoSQL database for persistent data (users, chats, messages).
@@ -76,17 +76,39 @@ To run this project locally, you need to have the following prerequisites instal
     cd ScalableChat
     ```
 
-2.  **Navigate to the AppHost project directory**:
+2.  **Configure JWT Secret Key**:
+    Add the `Jwt:SecretKey` configuration to both `ScalableChat.Api` and `ScalableChat.SignalR` projects. You can do this in two ways:
+    - Add it to the `appsettings.json` files:
+      ```json
+      "Jwt": {
+        "SecretKey": "your-secret-key-here"
+      }
+      ```
+    - Or use the .NET Secrets Manager for sensitive data (recommended for development):
+      ```bash
+      dotnet user-secrets set "Jwt:SecretKey" "your-secret-key-here" --project ScalableChat.Api
+      dotnet user-secrets set "Jwt:SecretKey" "your-secret-key-here" --project ScalableChat.SignalR
+      ```
+
+3.  **Install frontend dependencies**:
+    Navigate to the UI project and install npm dependencies:
     ```bash
-    cd src/ScalableChat.AppHost 
+    cd ScalableChat.Ui
+    npm install
+    cd ..
     ```
 
-3.  **Run the Aspire orchestrator**:
+4.  **Navigate to the AppHost project directory**:
+    ```bash
+    cd ScalableChat.AppHost 
+    ```
+
+5.  **Run the Aspire orchestrator**:
     ```bash
     dotnet run
     ```
 
-4.  **Access the Application**:
+6.  **Access the Application**:
     Once all services are running, the .NET Aspire dashboard will open in your browser. In the dashboard, find the **`gateway`** service endpoint and click its URL. This will open the React frontend. The gateway acts as a single entry point, routing requests to the frontend, API, and SignalR services as needed.
 
     ![Aspire table](/images/aspire-table.png)
