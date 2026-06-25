@@ -32,7 +32,7 @@ var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signal
     .WithReplicas(4)
     ;
 
-var react = builder.AddNpmApp("react", "../ScalableChat.Ui", "dev")
+var react = builder.AddViteApp("react", "../ScalableChat.Ui", "dev")
     .WithReference(chatApi)
     .WaitFor(chatApi)
     .WithReference(chatSignalR)

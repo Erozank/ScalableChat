@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     allowedHosts: [
-      'host.docker.internal'
+      'host.docker.internal',
+      'aspire.dev.internal'
     ],
     port: parseInt(process.env.PORT) || 3000,
     host: true
