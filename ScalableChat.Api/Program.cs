@@ -50,8 +50,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddSingleton<ICluster>(sp => {
-    return Cluster.Builder().AddContactPoint("localhost")
-                    .WithPort(9042)
+    return Cluster.Builder().AddContactPoint(builder.Configuration["ScyllaDB:Host"])
+                    .WithPort(int.Parse(builder.Configuration["ScyllaDB:Port"]))
                     .Build();
 });
 builder.Services.AddSingleton<Cassandra.ISession>(sp => {

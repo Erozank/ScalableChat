@@ -11,7 +11,7 @@ var kafka = builder.AddKafka("kafka")
 var scylla = builder.AddContainer("scylla-node1", "scylladb/scylla", "latest")
     .WithArgs("--seeds=scylla-node1")
     .WithVolume("scylla_node1_data", "/var/lib/scylla")
-    .WithEndpoint(port: 9042, targetPort: 9042, "cql")
+    .WithEndpoint(port: 9042, targetPort: 9042, scheme: "cql", name: "scylladb")
     .WithContainerName("scylla-node1");
 
 builder.AddContainer("ini-scylla", "nuvo/docker-cqlsh")
@@ -21,9 +21,13 @@ builder.AddContainer("ini-scylla", "nuvo/docker-cqlsh")
     .WaitFor(scylla);
 
 var chatApi = builder.AddProject<Projects.ScalableChat_Api>("chat-api")
+    .WithEnvironment("ScyllaDB__Host", scylla.GetEndpoint("scylladb").Property(EndpointProperty.Host))
+    .WithEnvironment("ScyllaDB__Port", scylla.GetEndpoint("scylladb").Property(EndpointProperty.Port))
     .WaitFor(scylla);
 
 var chatSignalR = builder.AddProject<Projects.ScalableChat_SignalR>("chat-signalr")
+    .WithEnvironment("ScyllaDB__Host", scylla.GetEndpoint("scylladb").Property(EndpointProperty.Host))
+    .WithEnvironment("ScyllaDB__Port", scylla.GetEndpoint("scylladb").Property(EndpointProperty.Port))
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(kafka)
